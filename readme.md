@@ -54,14 +54,30 @@ L'application respecte les principes **SOLID** et l'architecture **MVC** pour ga
 
 ---
 
-## 4. Interfaces FXML (Vues principales)
-L'interface graphique est décomposée en cinq modules ergonomiques :
-1.  **Home View (Menu) :** Tableau de bord central avec boutons de navigation rapide vers les différents services.
-2.  **Inventory View :** TableView interactive permettant de visualiser et gérer l'intégralité du stock.
-3.  **Scan View :** Interface dédiée à la douchette pour un traitement "mains libres" des emprunts et retours.
-4.  **Borrower View :** Gestion simplifiée de l'annuaire des utilisateurs.
-5.  **History/Logs View :** Journalisation complète permettant de tracer chaque mouvement de matériel.
+## 4. Interfaces FXML (Vues et Navigation)
+L'interface est décomposée en 5 vues principales interconnectées :
 
+* **Vue 1 : Dashboard (Home)**
+  * Indicateurs de performance (KPI) : Résumé visuel du stock (Total, empruntés, maintenance).
+  * Menu de navigation rapide vers les différents modules.
+  * Widget "Ajout Rapide" : Formulaire d'enregistrement express d'un objet.
+
+* **Vue 2 : Station de Scan (Scanner)**
+  * Zone de détection pour la douchette.
+  * Dialogue contextuel : Lors d'un scan, le système propose l'action (Emprunt, Retour, Maintenance).
+  * Feedback visuel : Affichage immédiat de la fiche de l'objet scanné.
+
+* **Vue 3 : Historique & Logs**
+  * Journal complet des mouvements avec filtrage par utilisateur, date ou type d'action.
+  * Mise en évidence visuelle des emprunts en retard.
+
+* **Vue 4 : Inventaire Dynamique**
+  * TableView globale avec recherche textuelle.
+  * Fiche Produit : Détails complets et bouton "Voir l'historique de cet objet" (lien vers Vue 3).
+
+* **Vue 5 : Annuaire Utilisateurs (Users)**
+  * Gestion CRUD complète des emprunteurs.
+  * Profil Utilisateur : Détails et bouton "Emprunts en cours" pour voir le matériel détenu.
 ---
 
 ## 5. Plan de Tests (JUnit 5 & Mockito)
