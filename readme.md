@@ -78,9 +78,17 @@ L'interface est décomposée en 5 vues principales interconnectées :
 * **Vue 5 : Annuaire Utilisateurs (Users)**
   * Gestion CRUD complète des emprunteurs.
   * Profil Utilisateur : Détails et bouton "Emprunts en cours" pour voir le matériel détenu.
+
 ---
 
-## 5. Plan de Tests (JUnit 5 & Mockito)
+## 5. Multithreading & Réactivité
+L'application utilise des `Task` JavaFX pour maintenir la fluidité de l'UI :
+1. **Génération QR :** Encodage et écriture disque asynchrones.
+2. **Accès DB :** Chargements et recherches complexes déportés sur des threads secondaires (usage de **Virtual Threads** pour l'I/O).
+
+---
+
+## 6. Plan de Tests (JUnit 5 & Mockito)
 Une couverture de tests supérieure à **80%** est ciblée sur le modèle et la logique métier :
 * **Tests de Règles Métier :** Validation des états (ex: impossible d'emprunter un objet en maintenance).
 * **Tests de Persistance :** Utilisation d'une base de données **H2 (In-Memory)** pour garantir des tests isolés et reproductibles.
@@ -88,7 +96,7 @@ Une couverture de tests supérieure à **80%** est ciblée sur le modèle et la 
 
 ---
 
-## 6. CALENDRIER HEBDOMDAIRE (TEMPORAIRE ET FLEXIBLE)
+## 7. CALENDRIER HEBDOMDAIRE (TEMPORAIRE ET FLEXIBLE)
 
 | Semaine | Équipier A (Data & Architecture) | Équipier B (UI & Services) |
 | :--- | :--- | :--- |
@@ -99,7 +107,7 @@ Une couverture de tests supérieure à **80%** est ciblée sur le modèle et la 
 
 ---
 
-## 7. Configuration Technique & Installation
+## 8. Configuration Technique & Installation
 * **Gestionnaire de dépendances :** Maven.
 * **Système de Modules :** Fichier `module-info.java` configuré pour l'accès aux modules `javafx.fxml` et `java.sql`.
 * **Persistance :** SQLite (fichier de base de données inclus dans les ressources).
@@ -109,6 +117,6 @@ Une couverture de tests supérieure à **80%** est ciblée sur le modèle et la 
 
 ---
 
-## 8. Suivi et Bugs
+## 9. Suivi et Bugs
 * **Bugs connus :** Aucun pour le moment.
 * **Écarts analyse/implémentation :** (À compléter à la fin du projet).
