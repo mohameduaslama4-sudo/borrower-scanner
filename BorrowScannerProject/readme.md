@@ -23,8 +23,6 @@ La base de données **SQLite** est structurée autour de trois tables principale
 * `id` (PK, String) : Identifiant unique contenu dans le QR code.
 * `name` (String) : Nom de l'objet.
 * `category` (String) : Catégorie de matériel (ex : Microcontrôleur, Accessoire).
-* `total_stock` (Integer) : Nombre total d’unités existantes pour cette catégorie de matériel.
-* `available_stock` (Integer) : Nombre d’unités disponibles pour cette catégorie de matériel.
 * `status` (String) : État actuel (AVAILABLE, BORROWED, MAINTENANCE).
 * `qr_path` (String) : Chemin local vers l'image du QR code généré.
 
@@ -41,7 +39,7 @@ La base de données **SQLite** est structurée autour de trois tables principale
 * `item_id` (FK) : Référence à l'objet concerné.
 * `borrower_id` (FK) : Référence à la personne qui emprunte.
 * `borrowed_date` (DateTime) : Date et heure de sortie.
-* `return_date` (DateTime, Nullable) : Date et heure de retour (clôture du log).
+* `return_date` (DateTime, nullable) : Date et heure de retour (null si non encore retourné).
 
 ---
 

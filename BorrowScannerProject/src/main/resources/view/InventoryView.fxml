@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/25"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="be.esi.prj.controller.InventoryController">
+
+    <!-- Header -->
+    <top>
+        <VBox spacing="10" alignment="CENTER" style="-fx-padding: 10;">
+
+            <Label text="Gestion de l'inventaire"
+                   style="-fx-font-size: 24; -fx-font-weight: bold;"/>
+
+            <!-- Navigation -->
+            <HBox spacing="15" alignment="CENTER">
+                <Button fx:id="dashboardButton" text="🏠 Dashboard"/>
+                <Button text="🛠️ Inventaire" disable="true"/>
+                <Button fx:id="usersButton" text="👤 Utilisateurs"/>
+                <Button fx:id="historyButton" text="📜 Historique"/>
+            </HBox>
+
+            <Separator/>
+
+        </VBox>
+    </top>
+
+    <!-- CONTENU PRINCIPALE-->
+    <center>
+        <VBox spacing="10" style="-fx-padding: 15;">
+
+            <!-- Barre d’actions -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+
+                <!-- Recherche intelligente -->
+                <TextField fx:id="searchItemField"
+                           promptText="Rechercher un matériel..."
+                           prefWidth="250"/>
+
+                <!-- Filtre catégorie -->
+                <ComboBox fx:id="filterCategory"
+                          promptText="Catégorie"/>
+
+                <!-- Filtre statut -->
+                <ComboBox fx:id="filterStatus" promptText="Statut">
+                    <items>
+                    </items>
+                </ComboBox>
+
+                <Button fx:id="addButton" text="➕ Ajouter"/>
+                <Button fx:id="editButton" text="✏️ Modifier"/>
+                <Button fx:id="deleteButton" text="🗑 Supprimer"/>
+
+            </HBox>
+
+            <!-- Table de l'inventaire -->
+            <TableView fx:id="itemTable" VBox.vgrow="ALWAYS">
+                <placeholder>
+                    <Label text="Aucun matériel trouvé"/>
+                </placeholder>
+
+                <columns>
+                    <TableColumn fx:id="colQrId" text="QR_ID" prefWidth="150" resizable="false"/>
+                    <TableColumn fx:id="colName" text="Nom" prefWidth="200" resizable="false"/>
+                    <TableColumn fx:id="colCategory" text="Catégorie" prefWidth="150" resizable="false"/>
+                    <TableColumn fx:id="colStatus" text="Statut" prefWidth="150" resizable="false"/>
+                </columns>
+
+            </TableView>
+
+        </VBox>
+    </center>
+
+</BorderPane>

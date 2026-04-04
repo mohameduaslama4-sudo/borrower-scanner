@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/25"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="be.esi.prj.controller.HistoryController">
+
+    <!-- HEADER -->
+    <top>
+        <VBox spacing="10" alignment="CENTER" style="-fx-padding: 10;">
+            <Label text="Historique des transactions"
+                   style="-fx-font-size: 24; -fx-font-weight: bold;"/>
+
+            <!-- NAVIGATION -->
+            <HBox spacing="15" alignment="CENTER">
+                <Button fx:id="dashboardButton" text="🏠 Dashboard"/>
+                <Button fx:id="inventoryButton" text="🛠️ Inventaire"/>
+                <Button fx:id="usersButton" text="👤 Utilisateurs"/>
+                <Button text="📜 Historique" disable="true"/>
+            </HBox>
+
+            <Separator/>
+        </VBox>
+    </top>
+
+    <!-- CONTENU PRINCIPALE-->
+    <center>
+
+        <VBox spacing="15" style="-fx-padding: 15;" VBox.vgrow="ALWAYS" >
+
+            <!-- BARRE DE RECHERCHE & FILTRES SUR UNE LIGNE -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+
+                <!-- Barre de recherche -->
+                <TextField fx:id="searchLogField"
+                           promptText="Rechercher (matériel, utilisateur...)"
+                           prefWidth="250"/>
+                <Button fx:id="searchButton" text="🔍"/>
+
+                <!-- Combobox Action & Tri -->
+                <ComboBox fx:id="filterAction" promptText="Action" prefWidth="120"/>
+                <ComboBox fx:id="sortDate" promptText="Trier par date" prefWidth="120"/>
+
+                <!-- DatePicker Début & Fin -->
+                <DatePicker fx:id="startDatePicker" promptText="Début" prefWidth="120"/>
+                <DatePicker fx:id="endDatePicker" promptText="Fin" prefWidth="120"/>
+
+            </HBox>
+
+            <!-- Table des transactions -->
+            <TableView fx:id="logTable" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colDate" text="Date" prefWidth="150" resizable="false"/>
+                    <TableColumn fx:id="colItem" text="Matériel" prefWidth="150" resizable="false"/>
+                    <TableColumn fx:id="colBorrower" text="Utilisateur" prefWidth="150" resizable="false"/>
+                    <TableColumn fx:id="colAction" text="Action" prefWidth="150" resizable="false"/>
+                </columns>
+            </TableView>
+
+        </VBox>
+    </center>
+</BorderPane>

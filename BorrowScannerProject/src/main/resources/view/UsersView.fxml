@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/25"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="be.esi.prj.controller.UsersController">
+
+    <!-- HEADER -->
+    <top>
+        <VBox spacing="10" alignment="CENTER" style="-fx-padding: 10;">
+
+            <Label text="Gestion des utilisateurs"
+                   style="-fx-font-size: 24; -fx-font-weight: bold;"/>
+
+            <!-- NAVIGATION -->
+            <HBox spacing="15" alignment="CENTER">
+                <Button fx:id="dashboardButton" text="🏠 Dashboard"/>
+                <Button fx:id="inventoryButton" text="🛠️ Inventaire"/>
+                <Button text="👤 Utilisateurs" disable="true"/>
+                <Button fx:id="historyButton" text="📜 Historique"/>
+            </HBox>
+
+            <Separator/>
+
+        </VBox>
+    </top>
+
+    <!-- CONTENU PRINCIPALE-->
+    <center>
+        <SplitPane fx:id="splitPane" dividerPositions="0.6">
+
+            <items>
+
+                <!-- LEFT -->
+                <VBox spacing="10" style="-fx-padding: 10;">
+
+                    <Label text="Liste des Utilisateurs"
+                           style="-fx-font-size: 18; -fx-font-weight: bold;" />
+
+                    <!-- Recherche + bouton d'inscription -->
+                    <HBox spacing="10">
+                        <TextField fx:id="searchUserField"
+                                   promptText="Rechercher un utilisateur..."
+                                   HBox.hgrow="ALWAYS"/>
+
+                        <Button fx:id="addUserButton" text="➕"/>
+                    </HBox>
+
+                    <!-- Table des utilisateurs -->
+                    <TableView fx:id="userTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colId" text="Identifiant" prefWidth="150" resizable="false"/>
+                            <TableColumn fx:id="colLastName" text="Nom" prefWidth="200" resizable="false"/>
+                            <TableColumn fx:id="colFirstName" text="Prénom" prefWidth="200" resizable="false"/>
+                            <TableColumn fx:id="colEmail" text="Email" prefWidth="250" resizable="false"/>
+                        </columns>
+                    </TableView>
+
+                    <!-- Formulaire d'ajout (caché au départ) -->
+                    <VBox fx:id="addUserForm"
+                          spacing="10"
+                          visible="false"
+                          managed="false"
+                          style="-fx-padding: 10; -fx-border-color: lightgray; -fx-border-radius: 5;">
+
+                        <Label text="Formulaire d'inscription"
+                               style="-fx-font-weight: bold;" />
+
+                        <TextField fx:id="newLastName" promptText="Nom"/>
+                        <TextField fx:id="newFirstName" promptText="Prénom"/>
+                        <TextField fx:id="newEmail" promptText="Email"/>
+
+                        <HBox spacing="10">
+                            <Button fx:id="cancelAddButton" text="Annuler"/>
+                            <Button fx:id="confirmAddButton" text="Ajouter"/>
+                        </HBox>
+
+                    </VBox>
+
+                </VBox>
+
+                <!-- RIGHT -->
+                <VBox fx:id="rightPane"
+                      spacing="15"
+                      style="-fx-padding: 20;"
+                      visible="false"
+                      managed="false">
+
+                    <!-- TITRE -->
+                    <Label text="Détails de l'utilisateur"
+                           style="-fx-font-size: 16; -fx-font-weight: bold;" />
+
+                    <!-- INFORMATIONS DE BASE -->
+                    <GridPane vgap="10" hgap="5">
+
+                        <Label fx:id="detailLastNameLabel" text="Nom:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <Label fx:id="detailFirstNameLabel" text="Prénom:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <Label fx:id="detailEmailLabel" text="Email:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+
+                    </GridPane>
+
+                    <Separator/>
+
+                    <!-- EMPRUNTS EN COURS -->
+                    <Label fx:id="currentLoansCountLabel" text="Emprunts en cours : 0" style="-fx-font-weight: bold;" />
+                    <ListView fx:id="currentLoansList" prefHeight="150">
+                        <placeholder>
+                            <Label text="Aucun emprunt en cours"/>
+                        </placeholder>
+                    </ListView>
+
+                    <Separator/>
+
+                    <!-- HISTORIQUE RECENT -->
+                    <Label text="Historique récent" style="-fx-font-weight: bold;" />
+                    <ListView fx:id="recentHistoryList" prefHeight="150">
+                        <placeholder>
+                            <Label text="Aucune transaction récente"/>
+                        </placeholder>
+                    </ListView>
+
+                    <Separator/>
+
+                    <!-- ACTIONS -->
+                    <HBox spacing="10">
+                        <Button fx:id="deleteUserButton" text="🗑 Supprimer" style="-fx-text-fill: red;"/>
+                    </HBox>
+
+                </VBox>
+
+            </items>
+        </SplitPane>
+    </center>
+
+</BorderPane>
