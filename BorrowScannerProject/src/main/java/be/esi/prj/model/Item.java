@@ -1,15 +1,17 @@
 package be.esi.prj.model;
 
+
 public class Item {
 
-    private String id;
-    private String name;
-    private String category;
-    private String status;
-    private String qrPath;
+    private static int nextNumber = 1;
+    private final String id;
+    private final String name;
+    private ItemCategory category;
+    private ItemStatus status;
+    private final String qrPath;
 
-    public Item(String id, String name, String category, String status, String qrPath) {
-        this.id = id;
+    public Item(String name, ItemCategory category, ItemStatus status, String qrPath) {
+        this.id = generateId(category);
         this.name = name;
         this.category = category;
         this.status = status;
@@ -24,11 +26,11 @@ public class Item {
         return name;
     }
 
-    public String getCategory() {
+    public ItemCategory getCategory() {
         return category;
     }
 
-    public String getStatus() {
+    public ItemStatus getStatus() {
         return status;
     }
 
@@ -36,7 +38,17 @@ public class Item {
         return qrPath;
     }
 
-    public void setStatus(String status) {
+    public void setCategory(ItemCategory category) {
+        this.category = category;
+    }
+
+    public void setStatus(ItemStatus status) {
         this.status = status;
+    }
+
+    private static String generateId(ItemCategory category) {
+        String prefix = category.name().substring(0, 3).toUpperCase();
+        String number = String.format("%03d", nextNumber++);
+        return prefix + "-" + number;
     }
 }
