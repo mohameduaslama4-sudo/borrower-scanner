@@ -8,44 +8,38 @@ public class Borrower {
     private final String lastName;
     private String email;
 
-    public Borrower(String firstName, String lastName, String email) {
-        this.id = generateId();
+    /**
+     * Constructeur pour le REPOSITORY (chargement depuis la DB)
+     */
+    public Borrower(int id, String firstName, String lastName, String email) {
+        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
     }
 
-    public int getId() {
-        return id;
+    /**
+     * Constructeur pour la CRÉATION (nouvel utilisateur)
+     */
+    public Borrower(String firstName, String lastName, String email) {
+        this(generateId(), firstName, lastName, email);
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
+    public int getId() { return id; }
+    public String getFirstName() { return firstName; }
+    public String getLastName() { return lastName; }
+    public String getEmail() { return email; }
 
-    public String getLastName() {
-        return lastName;
-    }
+    public void setEmail(String email) { this.email = email; }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    // Génère un ID unique pour Borrower (0 à 999)
     private static int generateId() {
-        if (nextId > 999) { // limitation à 3 chiffres
+        if (nextId > 999) {
             throw new IllegalStateException("Maximum 999 utilisateurs atteint");
         }
         return nextId++;
     }
 
     public String getFormattedId() {
-        // Retourne l'ID formaté à 3 chiffres
         return String.format("%03d", id);
     }
-
 }

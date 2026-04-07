@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
 <BorderPane xmlns="http://javafx.com/javafx/25"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -10,67 +11,57 @@
     <!-- Header -->
     <top>
         <VBox spacing="10" alignment="CENTER" style="-fx-padding: 10;">
-
-            <Label text="Gestion de l'inventaire"
-                   style="-fx-font-size: 24; -fx-font-weight: bold;"/>
-
-            <!-- Navigation -->
+            <Label text="Gestion de l'inventaire" style="-fx-font-size: 24; -fx-font-weight: bold;"/>
             <HBox spacing="15" alignment="CENTER">
                 <Button fx:id="dashboardButton" text="🏠 Dashboard"/>
                 <Button text="🛠️ Inventaire" disable="true"/>
                 <Button fx:id="usersButton" text="👤 Utilisateurs"/>
                 <Button fx:id="historyButton" text="📜 Historique"/>
             </HBox>
-
             <Separator/>
-
         </VBox>
     </top>
 
-    <!-- CONTENU PRINCIPALE-->
     <center>
         <VBox spacing="10" style="-fx-padding: 15;">
 
             <!-- Barre d’actions -->
             <HBox spacing="10" alignment="CENTER_LEFT">
-
-                <!-- Recherche intelligente -->
-                <TextField fx:id="searchItemField"
-                           promptText="Rechercher un matériel..."
-                           prefWidth="250"/>
-
-                <!-- Filtre catégorie -->
-                <ComboBox fx:id="filterCategory"
-                          promptText="Catégorie"/>
-
-                <!-- Filtre statut -->
-                <ComboBox fx:id="filterStatus" promptText="Statut">
-                    <items>
-                    </items>
-                </ComboBox>
+                <TextField fx:id="searchItemField" promptText="Rechercher un matériel..." prefWidth="250"/>
+                <ComboBox fx:id="filterCategory" prefWidth="160"/> <!-- Pour le filtre -->
+                <ComboBox fx:id="filterStatus" prefWidth="140"/>
 
                 <Button fx:id="addButton" text="➕ Ajouter"/>
                 <Button fx:id="editButton" text="✏️ Modifier"/>
                 <Button fx:id="deleteButton" text="🗑 Supprimer"/>
-
             </HBox>
+
+            <!-- FORMULAIRE D'AJOUT CACHÉ -->
+            <VBox fx:id="addItemForm" spacing="10" visible="false" managed="false"
+                  style="-fx-background-color: #f4f4f4; -fx-padding: 15; -fx-border-color: #ddd; -fx-border-radius: 5;">
+                <Label text="Ajouter un nouveau matériel" style="-fx-font-weight: bold;"/>
+                <HBox spacing="10">
+                    <TextField fx:id="nameField" promptText="Nom du matériel" HBox.hgrow="ALWAYS"/>
+                    <ComboBox fx:id="categoryCombo" promptText="Choisir catégorie"/> <!-- Pour l'ajout -->
+                    <Button fx:id="confirmAddButton" text="Confirmer" style="-fx-background-color: #2ecc71; -fx-text-fill: white;"/>
+                    <Button fx:id="cancelAddButton" text="Annuler"/>
+                </HBox>
+            </VBox>
 
             <!-- Table de l'inventaire -->
             <TableView fx:id="itemTable" VBox.vgrow="ALWAYS">
                 <placeholder>
                     <Label text="Aucun matériel trouvé"/>
                 </placeholder>
-
                 <columns>
                     <TableColumn fx:id="colQrId" text="QR_ID" prefWidth="150" resizable="false"/>
-                    <TableColumn fx:id="colName" text="Nom" prefWidth="200" resizable="false"/>
-                    <TableColumn fx:id="colCategory" text="Catégorie" prefWidth="150" resizable="false"/>
-                    <TableColumn fx:id="colStatus" text="Statut" prefWidth="150" resizable="false"/>
+                    <TableColumn fx:id="colName" text="Nom" prefWidth="180" resizable="false"/>
+                    <TableColumn fx:id="colCategory" text="Catégorie" prefWidth="130" resizable="false"/>
+                    <TableColumn fx:id="colStatus" text="Statut" prefWidth="130" resizable="false"/>
+                    <TableColumn fx:id="colQrDownload" text="Code QR" prefWidth="160" resizable="false"/>
                 </columns>
-
             </TableView>
 
         </VBox>
     </center>
-
 </BorderPane>
