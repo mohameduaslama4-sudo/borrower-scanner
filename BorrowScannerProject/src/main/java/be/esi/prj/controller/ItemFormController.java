@@ -1,8 +1,7 @@
 package be.esi.prj.controller;
 
 import be.esi.prj.model.*;
-import be.esi.prj.repository.ItemRepository;
-import be.esi.prj.repository.ItemRepositoryImpl;
+import be.esi.prj.service.ItemService;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -12,7 +11,7 @@ public class ItemFormController {
     @FXML private ComboBox<ItemCategory> categoryCombo;
     @FXML private ComboBox<ItemStatus> statusCombo;
 
-    private final ItemRepository itemRepository = new ItemRepositoryImpl();
+    private final ItemService itemService = new ItemService();
 
     @FXML
     public void initialize() {
@@ -30,7 +29,7 @@ public class ItemFormController {
                 "images/qr/" + nameField.getText() + ".png"
         );
 
-        itemRepository.insert(newItem);
+        itemService.createItem(newItem);
         closeWindow();
     }
 

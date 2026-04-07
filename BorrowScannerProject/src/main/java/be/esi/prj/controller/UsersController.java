@@ -1,8 +1,7 @@
 package be.esi.prj.controller;
 
 import be.esi.prj.model.Borrower;
-import be.esi.prj.repository.BorrowerRepository;
-import be.esi.prj.repository.BorrowerRepositoryImpl;
+import be.esi.prj.service.BorrowerService;
 import be.esi.prj.util.SceneManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -25,7 +24,7 @@ public class UsersController {
     @FXML private VBox addUserForm;
     @FXML private TextField newLastName, newFirstName, newEmail;
 
-    private final BorrowerRepository borrowerRepository = new BorrowerRepositoryImpl();
+    private final BorrowerService borrowerService = new BorrowerService();
     private final ObservableList<Borrower> users = FXCollections.observableArrayList();
 
     @FXML
@@ -71,7 +70,7 @@ public class UsersController {
         }
 
         try {
-            borrowerRepository.insert(new Borrower(0, firstName, lastName, email));
+            borrowerService.createBorrower(firstName, lastName, email);
             refreshTable();
             toggleAddForm(false);
 
@@ -105,6 +104,6 @@ public class UsersController {
     }
 
     private void refreshTable() {
-        users.setAll(borrowerRepository.findAll());
+        users.setAll(borrowerService.getAllBorrowers());
     }
 }

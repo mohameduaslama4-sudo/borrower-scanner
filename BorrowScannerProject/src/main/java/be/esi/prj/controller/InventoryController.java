@@ -1,8 +1,7 @@
 package be.esi.prj.controller;
 
 import be.esi.prj.model.*;
-import be.esi.prj.repository.ItemRepository;
-import be.esi.prj.repository.ItemRepositoryImpl;
+import be.esi.prj.service.ItemService;
 import be.esi.prj.util.SceneManager;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -47,7 +46,7 @@ public class InventoryController {
     @FXML private ComboBox<String> filterCategory;
     @FXML private ComboBox<String> filterStatus;
 
-    private final ItemRepository itemRepository = new ItemRepositoryImpl();
+    private final ItemService itemService = new ItemService();
     private final ObservableList<Item> allItems = FXCollections.observableArrayList();
     private static final String ALL_CATEGORIES = "Toutes catégories";
     private static final String ALL_STATUSES = "Tous statuts";
@@ -149,7 +148,7 @@ public class InventoryController {
         }
 
         Item newItem = new Item(name, cat, ItemStatus.AVAILABLE, "external-data/qr/" + sanitizeFilename(name) + ".png");
-        itemRepository.insert(newItem);
+        itemService.createItem(newItem);
 
         toggleForm(false);
         refreshTable();
@@ -207,7 +206,7 @@ public class InventoryController {
                 selectedItem.getQrPath()
         );
 
-        itemRepository.update(updatedItem);
+        itemService.updateItem(updatedItem);
         refreshTable();
         selectItemById(updatedItem.getId());
     }
@@ -232,7 +231,7 @@ public class InventoryController {
         }
 
         try {
-            itemRepository.delete(selectedItem.getId());
+            itemService.deleteItem(selectedItem.getId());
             refreshTable();
         } catch (Exception ex) {
             Alert error = new Alert(Alert.AlertType.ERROR);
@@ -325,7 +324,7 @@ public class InventoryController {
 
     private void refreshTable() {
         try {
-            allItems.setAll(itemRepository.findAll());
+            allItems.setAll(itemService.getAllItems());
             applyFilters();
         } catch (Exception e) {
             e.printStackTrace();

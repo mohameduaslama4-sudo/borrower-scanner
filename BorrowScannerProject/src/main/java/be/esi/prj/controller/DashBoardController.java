@@ -1,8 +1,7 @@
 package be.esi.prj.controller;
 
 import be.esi.prj.model.*;
-import be.esi.prj.repository.ItemRepository;
-import be.esi.prj.repository.ItemRepositoryImpl;
+import be.esi.prj.service.ItemService;
 import be.esi.prj.util.SceneManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -16,7 +15,7 @@ public class DashBoardController {
     @FXML private ComboBox<ItemCategory> quickItemCategory;
     @FXML private Button quickAddButton;
 
-    private final ItemRepository itemRepository = new ItemRepositoryImpl();
+    private final ItemService itemService = new ItemService();
 
     @FXML
     public void initialize() {
@@ -50,7 +49,7 @@ public class DashBoardController {
         // Création de l'objet (l'ID est généré par le constructeur à 4 paramètres)
         Item newItem = new Item(name, cat, ItemStatus.AVAILABLE, "default_qr.png");
 
-        itemRepository.insert(newItem);
+        itemService.createItem(newItem);
 
         // Nettoyage des champs
         quickItemName.clear();
