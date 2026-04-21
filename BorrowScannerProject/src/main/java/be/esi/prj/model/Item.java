@@ -10,8 +10,18 @@ public class Item {
     private ItemStatus status;
     private final String qrPath;
 
-    public Item(String name, ItemCategory category, ItemStatus status, String qrPath) {
+    // Insertion en db
+    public Item(String name, ItemCategory category, ItemStatus status) {
         this.id = generateId(category);
+        this.name = name;
+        this.category = category;
+        this.status = status;
+        this.qrPath = "external-data/qrcodes/" + id + ".png";
+    }
+
+    // Lecture depuis la db
+    public Item(String id, String name, ItemCategory category, ItemStatus status, String qrPath) {
+        this.id = id;
         this.name = name;
         this.category = category;
         this.status = status;

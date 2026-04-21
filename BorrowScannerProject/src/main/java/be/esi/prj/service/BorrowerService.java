@@ -1,78 +1,73 @@
 package be.esi.prj.service;
 
 import be.esi.prj.model.Borrower;
-import be.esi.prj.repository.BorrowerRepository;
-import be.esi.prj.repository.BorrowerRepositoryImpl;
+import be.esi.prj.repository.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import java.util.List;
 
 public class BorrowerService {
 
-    private final BorrowerRepository borrowerRepository;
+    private static final BorrowerService INSTANCE = new BorrowerService();
+    private final BorrowerRepository borrowerRepository = new BorrowerRepositoryImpl();
+    private final ObservableList<Borrower> borrowers = FXCollections.observableArrayList();
 
-    public BorrowerService() {
-        this.borrowerRepository = new BorrowerRepositoryImpl();
+    public static BorrowerService getInstance() {
+        return INSTANCE;
     }
 
-    // Return all borrowers
+    private BorrowerService() {}
+
+    // ================= LOAD
+    public ObservableList<Borrower> load() {
+        borrowers.setAll(getAllBorrowers());
+        return borrowers;
+    }
+
     public List<Borrower> getAllBorrowers() {
         return borrowerRepository.findAll();
     }
 
-    // Return borrower by ID
+    public ObservableList<Borrower> getBorrowersObservable() {
+        return borrowers;
+    }
+
     public Borrower getBorrowerById(int id) {
-        return borrowerRepository.findById(id);
+        return borrowers.stream()
+                .filter(b -> b.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
-    // Search by name or surname
-    public List<Borrower> searchBorrowers(String keyword) {
-        if (keyword == null || keyword.isBlank()) {
-            return borrowerRepository.findAll();
+    // ================= CREATE
+    public Borrower addBorrower(String last, String first, String email) {
+
+        if (last == null || last.isBlank() || first == null || first.isBlank()
+                || email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Veuillez remplir tous les champs");
         }
-        return borrowerRepository.findByNameOrSurname(keyword);
+        if (!email.contains("@") || !email.contains(".")) throw new IllegalArgumentException("email invalide");
+        Borrower b = new Borrower(last, first, email);
+        int id = borrowerRepository.insert(b);
+        b.setId(id);
+        return b;
     }
 
-    // Create a new borrower
-    public void addBorrower(Borrower b) {
-        if (b == null) {
-            throw new IllegalArgumentException("Borrower cannot be null");
-        }
-        if (borrowerRepository.findById(b.getId()) != null) {
-            throw new IllegalArgumentException("Borrower already exists");
-        }
-        if (b.getFirstName() == null || b.getFirstName().isBlank() ||
-                b.getLastName() == null || b.getLastName().isBlank()) {
-            throw new IllegalArgumentException("Missing required fields");
-        }
-        if (!isEmailValid(b.getEmail())) {
-            throw new IllegalArgumentException("Invalid email");
-        }
-        borrowerRepository.insert(b);
-    }
-
-    // Update borrower email only
-    public void updateBorrowerEmail(int borrowerId, String email) {
-        Borrower borrower = borrowerRepository.findById(borrowerId);
-        if (borrower == null) {
-            throw new IllegalArgumentException("Borrower not found");
-        }
-        if (!isEmailValid(email)) {
-            throw new IllegalArgumentException("Invalid email");
-        }
-        borrower.setEmail(email);
-        borrowerRepository.update(borrower);
-    }
-
-    // Delete borrower
+    // ================= DELETE
     public void deleteBorrower(int id) {
-        if (borrowerRepository.findById(id) == null) {
-            throw new IllegalArgumentException("Borrower not found");
-        }
         borrowerRepository.delete(id);
     }
 
-    // Email validation
-    private boolean isEmailValid(String email) {
-        return email != null && !email.isBlank() && email.contains("@") && email.contains(".");
+    // ================= UPDATE EMAIL
+    public void updateBorrowerEmail(int id, String email) {
+
+        Borrower b = getBorrowerById(id);
+        if (email == null || email.isBlank() || !email.contains("@") || !email.contains(".")) {
+        throw new IllegalArgumentException("Email invalide");
+        }
+        b.setEmail(email.toUpperCase());
+        borrowerRepository.updateEmail(b);
+
     }
 }

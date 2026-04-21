@@ -1,8 +1,11 @@
 package be.esi.prj.service;
 
+import be.esi.prj.model.Item;
+import be.esi.prj.model.ItemStatus;
 import be.esi.prj.model.Loan;
-import be.esi.prj.repository.LoanRepository;
-import be.esi.prj.repository.LoanRepositoryImpl;
+import be.esi.prj.repository.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -10,99 +13,142 @@ import java.util.List;
 
 public class LoanService {
 
-    private final LoanRepository loanRepository;
+    private static final LoanService INSTANCE = new LoanService();
+    public static LoanService getInstance() { return INSTANCE; }
+    private final ItemService itemService = ItemService.getInstance();
+    private final LoanRepository loanRepository = new LoanRepositoryImpl();
+    private final ObservableList<Loan> loans = FXCollections.observableArrayList();
 
-    public LoanService() {
-        this.loanRepository = new LoanRepositoryImpl();
+
+    private LoanService() {}
+
+    // ================= LOAD
+    public ObservableList<Loan> load() {
+        loans.setAll(getAllLoans());
+        return loans;
     }
 
-    // Return all loans
     public List<Loan> getAllLoans() {
         return loanRepository.findAll();
     }
 
-    // Find a loan by ID
-    public Loan getLoanById(int id) {
-        return loanRepository.findById(id);
+
+    // ================= GET
+    public ObservableList<Loan> getLoansObservable() {
+        return loans;
     }
 
-    // Active loans (not returned)
+    public Loan getLoanById(int id) {
+        return loans.stream()
+                .filter(l -> l.getId() == id)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public List<Loan> getLoansByBorrower(int borrowerId) {
+        return loanRepository.findAll().stream().filter(l -> l.getBorrowerId() == borrowerId).toList();
+    }
+
+    // ================= CREATE
+    public void createLoan(Loan loan) {
+
+        Item item = itemService.getItemById(loan.getItemId());
+
+        if (item.getStatus() != ItemStatus.AVAILABLE) {
+            throw new IllegalStateException("Cet item est indisponible");
+        }
+
+        validate(loan);
+
+        // 🔥 changer le statut ici (logique métier)
+        item.setStatus(ItemStatus.UNAVAILABLE);
+        itemService.updateItem(item);
+
+        loanRepository.insert(loan);
+        loans.add(loan);
+    }
+
+    // ================= RETURN
+    public Loan returnLoan(int id) {
+
+        Loan loan = getLoanById(id);
+
+        if (loan == null || loan.getReturnDate() != null) {
+            throw new IllegalStateException("Aucun prêt actif trouvé");
+        }
+        Item item = itemService.getItemById(loan.getItemId());
+        loan.setReturnDate(LocalDateTime.now());
+        item.setStatus(ItemStatus.AVAILABLE);
+
+        loanRepository.update(loan);
+        itemService.updateItem(item);
+
+        int index = loans.indexOf(loan);
+        if (index != -1) {
+            loans.set(index, loan);
+        }
+        return loan;
+    }
+
+    // ================= EXTEND
+    public void extendLoan(int id) {
+
+        Loan loan = getLoanById(id);
+        if (loan == null) throw new IllegalArgumentException("Loan not found");
+
+        loan.extendDueDate();
+
+        loanRepository.update(loan);
+
+        int index = loans.indexOf(loan);
+        if (index != -1) {
+            loans.set(index, loan);
+        }
+    }
+
+    // ================= STATS (DB direct OK pour perf)
     public List<Loan> getActiveLoans() {
         return loanRepository.findActiveLoans();
     }
 
-    // Overdue loans
     public List<Loan> getOverdueLoans() {
         return loanRepository.findOverdueLoans();
     }
 
-    // Loans by borrower
-    public List<Loan> getLoansByBorrower(int borrowerId) {
-        return loanRepository.findByBorrowerId(borrowerId);
-    }
-
-    // Loans by item
-    public List<Loan> getLoansByItem(String itemId) {
-        return loanRepository.findByItemId(itemId);
-    }
-
-    // Loans between two dates
     public List<Loan> getLoansByDateRange(LocalDate start, LocalDate end) {
         return loanRepository.findLoansByDate(start, end);
     }
 
-    // Register a new loan
-    public void createLoan(Loan loan) {
-        if (loan == null) {
-            throw new IllegalArgumentException("Loan cannot be null");
-        }
-        if (loan.getBorrowerId() <= 0) {
-            throw new IllegalArgumentException("Borrower ID is required");
-        }
-        if (loan.getItemId() == null || loan.getItemId().isBlank()) {
-            throw new IllegalArgumentException("Item ID is required");
-        }
-
-        loanRepository.insert(loan);
-    }
-    // Mark a loan as returned
-    public void returnLoan(int loanId) {
-        Loan loan = loanRepository.findById(loanId);
-        if (loan == null) {
-            throw new IllegalArgumentException("Loan not found");
-        }
-        loan.returnLoan();
-        loanRepository.update(loan);
-    }
-
-    // Extend the due date of a loan
-    public void extendLoan(int loanId) {
-        Loan loan = loanRepository.findById(loanId);
-        if (loan == null) {
-            throw new IllegalArgumentException("Loan not found");
-        }
-        loan.extendDueDate();
-        loanRepository.update(loan);
-    }
-
-    // Number of active loans
     public int countActiveLoans() {
-        return loanRepository.findActiveLoans().size();
+        return getActiveLoans().size();
     }
 
-    // Number of overdue loans
     public int countOverdueLoans() {
-        return loanRepository.findOverdueLoans().size();
+        return getOverdueLoans().size();
     }
 
-    // Number of loans today
     public int countLoansToday() {
         return loanRepository.findLoansByDate(LocalDate.now(), LocalDate.now()).size();
     }
 
-    // Number of returns today
     public int countReturnsToday() {
-        return (int) loanRepository.findAll().stream().filter(l -> l.getReturnDate() != null &&
-                        l.getReturnDate().equals(LocalDateTime.now())).count();
+
+        return (int) loans.stream()
+                .filter(l -> l.getReturnDate() != null &&
+                        l.getReturnDate().toLocalDate().equals(LocalDate.now()))
+                .count();
     }
+
+    // ================= VALIDATION
+    private void validate(Loan loan) {
+
+        if (loan == null) throw new IllegalArgumentException("Loan cannot be null");
+
+        if (loan.getBorrowerId() <= 0)
+            throw new IllegalArgumentException("Borrower ID required");
+
+        if (loan.getItemId() == null || loan.getItemId().isBlank())
+            throw new IllegalArgumentException("Item ID required");
+    }
+
 }

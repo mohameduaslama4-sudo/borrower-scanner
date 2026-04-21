@@ -4,26 +4,27 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx/25"
-            xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="be.esi.prj.controller.DashBoardController">
 
     <!-- HEADER -->
     <top>
+        <VBox spacing="10" alignment="CENTER" styleClass="header">
 
-        <VBox spacing="10" alignment="CENTER" style="-fx-padding: 10;">
-            <Label text="Tableau de bord">
+            <Label text="Tableau de bord" styleClass="title">
                 <font>
                     <Font name="System Bold" size="24.0"/>
                 </font>
             </Label>
 
             <!-- Navigation -->
-            <HBox spacing="15" alignment="CENTER">
-                <Button text="🏠 Dashboard" disable="true"/>
-                <Button fx:id="inventoryButton" text="🛠️ Inventaire" />
-                <Button fx:id="usersButton" text="👤 Utilisateurs" />
-                <Button fx:id="historyButton" text="📜 Historique" />
+            <HBox spacing="15" alignment="CENTER" styleClass="nav-bar">
+
+                <Button text="🏠 Dashboard" disable="true" styleClass="nav-button"/>
+                <Button fx:id="inventoryButton" text="🛠️ Inventaire" styleClass="nav-button"/>
+                <Button fx:id="usersButton" text="👤 Utilisateurs" styleClass="nav-button"/>
+                <Button fx:id="historyButton" text="📜 Historique" styleClass="nav-button"/>
+
             </HBox>
 
             <Separator/>
@@ -31,80 +32,59 @@
         </VBox>
     </top>
 
-    <!-- CONTENU PRINCIPALE-->
+    <!-- CONTENU PRINCIPAL -->
     <center>
 
-        <VBox spacing="25" alignment="CENTER" style="-fx-padding: 20;">
+        <VBox spacing="25" alignment="CENTER" styleClass="main-container">
 
-            <!-- SCAN QR avec TextField non-visible -->
+            <!-- SCAN -->
             <VBox spacing="10" alignment="CENTER">
-
-                <Label text="Scanner un matériel"
-                       style="-fx-font-weight: bold;"/>
-
-                <Button fx:id="scanButton" text="📷 Scanner QR"
-                        prefWidth="200"/>
-
-                <TextField fx:id="scanField"
-                           promptText="Scan QR ici"
-                           visible="false"/>
+                <Label text="Scanner un matériel" styleClass="subtitle"/>
+                <Button fx:id="scanButton" text="📷 Scanner QR" prefWidth="250" prefHeight="50" styleClass="button"/>
             </VBox>
 
             <Separator/>
 
-            <!-- STATS PERTINENTES -->
+            <!-- STATS -->
             <HBox spacing="30" alignment="CENTER">
 
-                <VBox style="-fx-background-color: #fff3e0; -fx-padding: 20; -fx-background-radius: 10;">
+                <VBox fx:id="activeLoansBox" styleClass="stat-box" alignment="CENTER">
                     <Label text="Emprunts en cours"/>
-                    <Label fx:id="borrowedLabel" text="0"
-                           style="-fx-font-size: 20; -fx-font-weight: bold;"/>
+                    <Label fx:id="borrowedLabel" text="0" styleClass="stat-number"/>
                 </VBox>
 
-                <VBox style="-fx-background-color: #ffebee; -fx-padding: 20; -fx-background-radius: 10;">
+                <VBox fx:id="overdueLoansBox" styleClass="stat-box" alignment="CENTER">
                     <Label text="Emprunts en retard"/>
-                    <Label fx:id="lateLabel" text="0"
-                           style="-fx-font-size: 20; -fx-font-weight: bold;"/>
+                    <Label fx:id="lateLabel" text="0" styleClass="stat-number"/>
                 </VBox>
 
-                <VBox style="-fx-background-color: #e3f2fd; -fx-padding: 20; -fx-background-radius: 10;">
+                <VBox fx:id="todayBorrowBox" styleClass="stat-box" alignment="CENTER">
                     <Label text="Empruntés aujourd’hui"/>
-                    <Label fx:id="todayBorrowLabel" text="0"
-                           style="-fx-font-size: 20; -fx-font-weight: bold;"/>
+                    <Label fx:id="todayBorrowLabel" text="0" styleClass="stat-number"/>
                 </VBox>
 
-                <VBox style="-fx-background-color: #e8f5e9; -fx-padding: 20; -fx-background-radius: 10;">
+                <VBox fx:id="todayReturnBox" styleClass="stat-box" alignment="CENTER">
                     <Label text="Remis aujourd’hui"/>
-                    <Label fx:id="todayReturnLabel" text="0"
-                           style="-fx-font-size: 20; -fx-font-weight: bold;"/>
+                    <Label fx:id="todayReturnLabel" text="0" styleClass="stat-number"/>
                 </VBox>
 
             </HBox>
 
             <Separator/>
 
-            <!-- mini-form d'ajout rapide d'item -->
-            <GridPane hgap="10" vgap="10" alignment="CENTER">
+            <!-- QUICK ADD -->
+            <GridPane hgap="10" vgap="10" alignment="CENTER" styleClass="quick-form">
 
-                <Label text="Ajout rapide de matériel"
-                       GridPane.columnSpan="2"
-                       style="-fx-font-weight: bold;"/>
+                <Label text="Ajout rapide de matériel" GridPane.columnSpan="2" styleClass="subtitle"/>
 
-                <TextField fx:id="quickItemName"
-                           promptText="Nom du matériel"
-                           GridPane.rowIndex="1"
-                           GridPane.columnIndex="0"/>
+                <TextField fx:id="quickItemName" promptText="Nom du matériel"
+                           GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="text-field"/>
 
-                <ComboBox fx:id="quickItemCategory"
-                          promptText="Catégorie"
-                          GridPane.rowIndex="1"
-                          GridPane.columnIndex="1"/>
+                <ComboBox fx:id="quickItemCategory" promptText="Catégorie"
+                          GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="combo-box"/>
 
-                <Button fx:id="quickAddButton"
-                        text="Ajouter"
-                        GridPane.rowIndex="2"
-                        GridPane.columnSpan="2"
-                        maxWidth="Infinity"/>
+                <Button fx:id="quickAddButton" text="Ajouter" GridPane.rowIndex="2"
+                        GridPane.columnSpan="2" maxWidth="Infinity" styleClass="button"/>
             </GridPane>
 
         </VBox>

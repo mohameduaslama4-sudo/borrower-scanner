@@ -3,23 +3,21 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx/25"
-            xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="be.esi.prj.controller.InventoryController">
 
-    <!-- Header -->
+    <!-- HEADER -->
     <top>
-        <VBox spacing="10" alignment="CENTER" style="-fx-padding: 10;">
+        <VBox spacing="20" alignment="CENTER" styleClass="header">
 
-            <Label text="Gestion de l'inventaire"
-                   style="-fx-font-size: 24; -fx-font-weight: bold;"/>
+            <Label text="Gestion de l'inventaire" styleClass="title"/>
 
-            <!-- Navigation -->
-            <HBox spacing="15" alignment="CENTER">
-                <Button fx:id="dashboardButton" text="🏠 Dashboard"/>
-                <Button text="🛠️ Inventaire" disable="true"/>
-                <Button fx:id="usersButton" text="👤 Utilisateurs"/>
-                <Button fx:id="historyButton" text="📜 Historique"/>
+            <!-- NAVIGATION -->
+            <HBox spacing="15" alignment="CENTER" styleClass="nav-bar">
+                <Button fx:id="dashboardButton" text="🏠 Dashboard" styleClass="nav-button"/>
+                <Button text="🛠️ Inventaire" disable="true" styleClass="nav-button"/>
+                <Button fx:id="usersButton" text="👤 Utilisateurs" styleClass="nav-button"/>
+                <Button fx:id="historyButton" text="📜 Historique" styleClass="nav-button"/>
             </HBox>
 
             <Separator/>
@@ -27,45 +25,39 @@
         </VBox>
     </top>
 
-    <!-- CONTENU PRINCIPALE-->
+    <!-- CONTENU -->
     <center>
-        <VBox spacing="10" style="-fx-padding: 15;">
 
-            <!-- Barre d’actions -->
-            <HBox spacing="10" alignment="CENTER_LEFT">
+        <VBox spacing="20" styleClass="main-container" alignment="CENTER">
 
-                <!-- Recherche intelligente -->
-                <TextField fx:id="searchItemField"
-                           promptText="Rechercher un matériel..."
-                           prefWidth="250"/>
+            <!-- TOOLBAR -->
+            <HBox spacing="10" alignment="CENTER" styleClass="filter-bar">
 
-                <!-- Filtre catégorie -->
-                <ComboBox fx:id="filterCategory"
-                          promptText="Catégorie"/>
+                <TextField fx:id="searchItemField" promptText="Rechercher un matériel..."
+                           prefWidth="250" styleClass="text-field"/>
 
-                <!-- Filtre statut -->
-                <ComboBox fx:id="filterStatus" promptText="Statut">
-                    <items>
-                    </items>
-                </ComboBox>
+                <ComboBox fx:id="filterCategory" promptText="CATÉGORIE" styleClass="combo-box"/>
+                <ComboBox fx:id="filterStatus" promptText="STATUT" styleClass="combo-box"/>
 
-                <Button fx:id="addButton" text="➕ Ajouter"/>
-                <Button fx:id="editButton" text="✏️ Modifier"/>
-                <Button fx:id="deleteButton" text="🗑 Supprimer"/>
+                <Button fx:id="addButton" text="➕ Ajouter" styleClass="button"/>
+                <Button fx:id="editButton" text="✏️ Modifier" styleClass="button"/>
+                <Button fx:id="deleteButton" text="🗑 Supprimer" styleClass="button danger"/>
 
             </HBox>
 
-            <!-- Table de l'inventaire -->
-            <TableView fx:id="itemTable" VBox.vgrow="ALWAYS">
+            <!-- TABLE -->
+            <TableView fx:id="itemTable" maxWidth="800" VBox.vgrow="ALWAYS" styleClass="table-view">
+
                 <placeholder>
                     <Label text="Aucun matériel trouvé"/>
                 </placeholder>
 
                 <columns>
-                    <TableColumn fx:id="colQrId" text="QR_ID" prefWidth="150" resizable="false"/>
-                    <TableColumn fx:id="colName" text="Nom" prefWidth="200" resizable="false"/>
-                    <TableColumn fx:id="colCategory" text="Catégorie" prefWidth="150" resizable="false"/>
-                    <TableColumn fx:id="colStatus" text="Statut" prefWidth="150" resizable="false"/>
+                    <TableColumn fx:id="colQrId" text="QR_ID" prefWidth="120"/>
+                    <TableColumn fx:id="colName" text="Nom" prefWidth="150"/>
+                    <TableColumn fx:id="colCategory" text="Catégorie" prefWidth="150"/>
+                    <TableColumn fx:id="colStatus" text="Statut" prefWidth="150"/>
+                    <TableColumn fx:id="colQrPath" text="QR_Path" prefWidth="230"/>
                 </columns>
 
             </TableView>

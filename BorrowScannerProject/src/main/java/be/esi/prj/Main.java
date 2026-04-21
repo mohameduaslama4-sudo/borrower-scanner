@@ -1,5 +1,9 @@
 package be.esi.prj;
 
+import be.esi.prj.model.Item;
+import be.esi.prj.model.ItemCategory;
+import be.esi.prj.model.ItemStatus;
+import be.esi.prj.service.ItemService;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -8,15 +12,19 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        URL resource = Main.class.getResource("/view/UsersView.fxml");
+        URL resource = Main.class.getResource("/view/DashBoardView.fxml");
         FXMLLoader loader = new FXMLLoader(resource);
         Parent root = loader.load();
-        Scene scene = new Scene(root, 800, 600);
+        Scene scene = new Scene(root, 1000, 800);
+        scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
         stage.setScene(scene);
         stage.setMinWidth(800);
         stage.setMinHeight(600);

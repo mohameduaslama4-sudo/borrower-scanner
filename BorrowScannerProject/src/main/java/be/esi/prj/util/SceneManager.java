@@ -4,6 +4,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.util.Objects;
 
 public class SceneManager {
 
@@ -16,10 +17,10 @@ public class SceneManager {
      */
     public static void switchScene(Stage stage, String fxmlFile) {
         try {
-            Parent newRoot = FXMLLoader.load(SceneManager.class.getResource("/view/" + fxmlFile));
+            Parent newRoot = FXMLLoader.load(Objects.requireNonNull(SceneManager.class.getResource("/view/" + fxmlFile)));
             stage.getScene().setRoot(newRoot);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error loading " + fxmlFile, e);
         }
     }
 }
