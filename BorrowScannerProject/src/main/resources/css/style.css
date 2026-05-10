@@ -1,0 +1,265 @@
+/* =========================
+   QuickBorrow Theme (PRO DASHBOARD)
+   ========================= */
+
+.root {
+    -fx-font-family: "SF Pro Text", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    -fx-background-color: linear-gradient(to bottom, #FFE89A, #FFC94D);
+    -fx-text-fill: #3A3224;
+
+    /* padding global */
+    -fx-padding: 20;
+
+    /* base text size plus lisible */
+    -fx-font-size: 16px;
+}
+
+/* =========================
+   TYPOGRAPHY
+========================= */
+
+.label {
+    -fx-text-fill: #183047;
+    -fx-font-weight: 600;
+    -fx-font-size: 14px;
+}
+
+/* TITRES PAGES */
+.label.title {
+    -fx-font-size: 30px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #0f2a44;
+}
+
+/* =========================
+   SEPARATORS
+========================= */
+.separator .line {
+    -fx-border-color: #d7e3f4;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.button {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #edf4ff);
+    -fx-text-fill: #12314d;
+    -fx-font-weight: 800;
+    -fx-font-size: 13px;
+
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #c9d9ee;
+
+    -fx-padding: 9 14;
+    -fx-cursor: hand;
+
+    -fx-effect: dropshadow(gaussian, rgba(16, 39, 66, 0.10), 10, 0.18, 0, 2);
+}
+
+.button:hover {
+    -fx-background-color: #eaf2ff;
+}
+
+.button:pressed {
+    -fx-background-color: #dce9ff;
+}
+
+.button:disabled {
+    -fx-opacity: 0.6;
+}
+
+/* NAV BUTTONS */
+#dashboardButton,
+#inventoryButton,
+#usersButton,
+#historyButton {
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+}
+
+/* PRIMARY ACTIONS */
+#scanButton,
+#quickAddButton,
+#addButton,
+#addUserButton,
+#confirmAddButton {
+    -fx-background-color: linear-gradient(to bottom, #1f8dbd, #186d94);
+    -fx-text-fill: white;
+    -fx-font-weight: 900;
+}
+
+#scanButton:hover,
+#quickAddButton:hover,
+#addButton:hover,
+#addUserButton:hover,
+#confirmAddButton:hover {
+    -fx-background-color: #23a1d8;
+}
+
+/* DELETE */
+#deleteUserButton {
+    -fx-background-color: linear-gradient(to bottom, #f05252, #dc2626);
+    -fx-text-fill: white;
+}
+
+/* =========================
+   INPUTS
+========================= */
+
+.text-field,
+.combo-box-base,
+.date-picker {
+    -fx-background-color: white;
+    -fx-text-fill: #14324d;
+    -fx-prompt-text-fill: #6f89a3;
+
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #c7d7ea;
+
+    -fx-padding: 8 10;
+
+    -fx-font-size: 13px;
+}
+
+.text-field:focused,
+.combo-box-base:focused,
+.date-picker:focused {
+    -fx-border-color: #2f84c5;
+}
+
+/* =========================
+   TABLE VIEW (IMPORTANT)
+========================= */
+
+.table-view {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-color: #c6d8ee;
+    -fx-border-radius: 14;
+
+    /* 🔥 grosse ombre dashboard */
+    -fx-effect: dropshadow(gaussian, rgba(10, 30, 60, 0.20), 20, 0.25, 0, 4);
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #e4effd;
+}
+
+.table-view .column-header .label {
+    -fx-font-size: 15px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #153a5b;
+}
+
+.table-view .cell {
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-text-fill: #1a3a57;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #eaf4ff;
+    -fx-cursor: hand;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #d5e8ff;
+}
+
+/* =========================
+   LIST VIEW
+========================= */
+
+.list-view {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-color: #c6d8ee;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: #edf5ff;
+}
+
+/* =========================
+   DASHBOARD STATS
+========================= */
+
+#activeLoansBox,
+#overdueLoansBox,
+#todayBorrowBox,
+#todayReturnBox {
+    -fx-background-radius: 14;
+    -fx-padding: 22;
+
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 16, 0.22, 0, 3);
+    -fx-cursor: hand;
+}
+
+/* hover cards */
+#activeLoansBox:hover { -fx-background-color: #ffe7c2; }
+#overdueLoansBox:hover { -fx-background-color: #ffd6d6; }
+#todayBorrowBox:hover { -fx-background-color: #d8ecff; }
+#todayReturnBox:hover { -fx-background-color: #dff5e1; }
+
+/* KPI NUMBERS */
+#borrowedLabel,
+#lateLabel,
+#todayBorrowLabel,
+#todayReturnLabel {
+    -fx-font-size: 34px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #0b2a45;
+}
+
+/* =========================
+   PANELS
+========================= */
+
+#addUserForm,
+#rightPane {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-color: #c8daef;
+
+    -fx-effect: dropshadow(gaussian, rgba(14, 33, 52, 0.10), 14, 0.2, 0, 3);
+}
+
+/* =========================
+   SPLITPANE
+========================= */
+
+#splitPane {
+    -fx-background-color: transparent;
+}
+
+/* =========================
+   DIALOGS
+========================= */
+
+.dialog-pane {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-color: #bfd4ea;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #e4efff;
+}
+
+/* =========================
+   SCROLLBAR
+========================= */
+
+.scroll-bar:vertical .thumb,
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: #b9cee6;
+    -fx-background-radius: 999;
+}
+
+.scroll-bar:vertical .thumb:hover,
+.scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: #9ebedf;
+}

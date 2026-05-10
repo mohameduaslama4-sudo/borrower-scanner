@@ -1,5 +1,6 @@
 package be.esi.prj.model;
 
+
 public class Item {
 
     private static int nextNumber = 1;
@@ -9,10 +10,16 @@ public class Item {
     private ItemStatus status;
     private final String qrPath;
 
-    /**
-     * CONSTRUCTEUR 1 : Pour la base de données (5 paramètres)
-     * On passe l'ID déjà existant.
-     */
+    // Insertion en db
+    public Item(String name, ItemCategory category, ItemStatus status) {
+        this.id = generateId(category);
+        this.name = name;
+        this.category = category;
+        this.status = status;
+        this.qrPath = "external-data/qrcodes/" + id + ".png";
+    }
+
+    // Lecture depuis la db
     public Item(String id, String name, ItemCategory category, ItemStatus status, String qrPath) {
         this.id = id;
         this.name = name;
@@ -21,26 +28,33 @@ public class Item {
         this.qrPath = qrPath;
     }
 
-    /**
-     * CONSTRUCTEUR 2 : Pour la création initiale (4 paramètres)
-     * L'ID est généré automatiquement.
-     */
-    public Item(String name, ItemCategory category, ItemStatus status, String qrPath) {
-        this(generateId(category), name, category, status, qrPath);
+    public String getId() {
+        return id;
     }
 
-    // --- GETTERS & SETTERS ---
+    public String getName() {
+        return name;
+    }
 
-    public String getId() { return id; }
-    public String getName() { return name; }
-    public ItemCategory getCategory() { return category; }
-    public ItemStatus getStatus() { return status; }
-    public String getQrPath() { return qrPath; }
+    public ItemCategory getCategory() {
+        return category;
+    }
 
-    public void setCategory(ItemCategory category) { this.category = category; }
-    public void setStatus(ItemStatus status) { this.status = status; }
+    public ItemStatus getStatus() {
+        return status;
+    }
 
-    // --- LOGIQUE ID ---
+    public String getQrPath() {
+        return qrPath;
+    }
+
+    public void setCategory(ItemCategory category) {
+        this.category = category;
+    }
+
+    public void setStatus(ItemStatus status) {
+        this.status = status;
+    }
 
     private static String generateId(ItemCategory category) {
         String prefix = category.name().substring(0, 3).toUpperCase();

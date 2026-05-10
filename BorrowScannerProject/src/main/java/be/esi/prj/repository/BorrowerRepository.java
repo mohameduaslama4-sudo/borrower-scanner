@@ -7,7 +7,7 @@ public interface BorrowerRepository {
     List<Borrower> findAll();
     Borrower findById(int id);
     List<Borrower> findByNameOrSurname(String keyword);
-    void insert(Borrower borrower);
-    void update(Borrower borrower);
+    int insert(Borrower borrower);
+    void updateEmail(Borrower borrower);
     void delete(int id);
 }

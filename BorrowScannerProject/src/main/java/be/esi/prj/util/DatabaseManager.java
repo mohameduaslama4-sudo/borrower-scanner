@@ -1,54 +1,100 @@
 package be.esi.prj.util;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.*;
 
 public class DatabaseManager {
-    private static final String DB_PATH = "external-data/borrow_manager.db";
-    private static final String URL = "jdbc:sqlite:" +DB_PATH;
-    private static Connection connection;
 
-    public static Connection getConnection() throws SQLException {
-        if (connection == null || connection.isClosed()) {
-            connection = DriverManager.getConnection(URL);
-            createTables(); // On s'assure que les tables existent
-        }
-        return connection;
+    private static final String DB_URL = "jdbc:sqlite:external-data/borrow_manager.db";
+    private static DatabaseManager instance;
+
+    private DatabaseManager() {
+        initDatabase();
     }
 
-    private static void createTables() {
-        String itemsTable = "CREATE TABLE IF NOT EXISTS items (" +
-                "id TEXT PRIMARY KEY, " +
-                "name TEXT NOT NULL, " +
-                "category TEXT, " +
-                "status TEXT, " +
-                "qr_path TEXT);";
+    public static DatabaseManager getInstance() {
+        if (instance == null) {
+            instance = new DatabaseManager();
+        }
+        return instance;
+    }
 
-        String borrowersTable = "CREATE TABLE IF NOT EXISTS borrowers (" +
-                "id INTEGER PRIMARY KEY, " +
-                "first_name TEXT NOT NULL, " +
-                "last_name TEXT NOT NULL, " +
-                "email TEXT);";
+    // =====================================================
+    // CONNECTION
+    // =====================================================
+    public Connection getConnection() {
+        try {
+            Connection conn = DriverManager.getConnection(DB_URL);
 
-        String loansTable = "CREATE TABLE IF NOT EXISTS loans (" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "item_id TEXT NOT NULL, " +
-                "borrower_id INTEGER NOT NULL, " +
-                "borrowed_date TEXT NOT NULL, " +
-                "due_date TEXT NOT NULL, " +
-                "return_date TEXT, " +
-                "FOREIGN KEY(item_id) REFERENCES items(id), " +
-                "FOREIGN KEY(borrower_id) REFERENCES borrowers(id));";
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("PRAGMA foreign_keys = ON");
+            }
 
-        try (Statement stmt = getConnection().createStatement()) {
-            stmt.execute(itemsTable);
-            stmt.execute(borrowersTable);
-            stmt.execute(loansTable);
-            stmt.execute("PRAGMA foreign_keys = ON;");
+            return conn;
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("DB connection error", e);
+        }
+    }
+
+    // =====================================================
+    // INIT DATABASE
+    // =====================================================
+    private void initDatabase() {
+
+        try {
+            // create folder if needed
+            Files.createDirectories(Paths.get("external-data"));
+
+            try (Connection conn = getConnection();
+                 Statement stmt = conn.createStatement()) {
+
+                // ================= BORROWERS =================
+                stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS borrowers (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        first_name TEXT NOT NULL,
+                        last_name TEXT NOT NULL,
+                        email TEXT NOT NULL
+                    )
+                """);
+
+                // ================= ITEMS =================
+                stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS items (
+                        id TEXT PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        category TEXT NOT NULL,
+                        status TEXT NOT NULL,
+                        qr_path TEXT NOT NULL
+                    )
+                """);
+
+                // ================= LOANS =================
+                stmt.execute("""
+                    CREATE TABLE IF NOT EXISTS loans (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        item_id TEXT NOT NULL,
+                        borrower_id INTEGER NOT NULL,
+                        borrowed_date TEXT NOT NULL,
+                        due_date TEXT NOT NULL,
+                        return_date TEXT,
+
+                        FOREIGN KEY (item_id) REFERENCES items(id)
+                            ON DELETE CASCADE
+                            ON UPDATE CASCADE,
+
+                        FOREIGN KEY (borrower_id) REFERENCES borrowers(id)
+                            ON DELETE CASCADE
+                            ON UPDATE CASCADE
+                    )
+                """);
+
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("DB initialization error", e);
         }
     }
 }

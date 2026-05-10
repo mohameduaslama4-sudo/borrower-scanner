@@ -1,68 +1,372 @@
 package be.esi.prj.controller;
 
 import be.esi.prj.model.*;
-import be.esi.prj.service.ItemService;
-import be.esi.prj.util.SceneManager;
+import be.esi.prj.service.*;
+import be.esi.prj.util.*;
+import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class DashBoardController {
-    @FXML private Button inventoryButton, usersButton, historyButton;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
-    // Éléments du mini-formulaire
+public class DashBoardController {
+
+    // ================= SERVICES
+    private final BorrowerService borrowerService = BorrowerService.getInstance();
+    private final LoanService loanService = LoanService.getInstance();
+    private final ItemService itemService = ItemService.getInstance();
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    // NAV
+    @FXML private Button inventoryButton;
+    @FXML private Button usersButton;
+    @FXML private Button historyButton;
+    @FXML private Button scanButton;
+
+    // STATS
+    @FXML private VBox activeLoansBox;
+    @FXML private VBox overdueLoansBox;
+    @FXML private VBox todayBorrowBox;
+    @FXML private VBox todayReturnBox;
+
+    @FXML private Label borrowedLabel;
+    @FXML private Label lateLabel;
+    @FXML private Label todayBorrowLabel;
+    @FXML private Label todayReturnLabel;
+
     @FXML private TextField quickItemName;
     @FXML private ComboBox<ItemCategory> quickItemCategory;
     @FXML private Button quickAddButton;
 
-    private final ItemService itemService = new ItemService();
-
     @FXML
     public void initialize() {
-        setupNavigation();
 
-        // Remplir la ComboBox avec les catégories de l'Enum
-        quickItemCategory.getItems().setAll(ItemCategory.values());
+        inventoryButton.setOnAction(e ->
+                SceneManager.switchScene((Stage) inventoryButton.getScene().getWindow(), "InventoryView.fxml"));
 
-        // Action du bouton "Ajouter"
-        quickAddButton.setOnAction(e -> handleQuickAdd());
+        usersButton.setOnAction(e ->
+                SceneManager.switchScene((Stage) usersButton.getScene().getWindow(), "UsersView.fxml"));
+
+        historyButton.setOnAction(e ->
+                SceneManager.switchScene((Stage) historyButton.getScene().getWindow(), "HistoryView.fxml"));
+
+        scanButton.setOnAction(e -> openScanDialog());
+
+        quickItemCategory.setItems(FXCollections.observableArrayList(ItemCategory.values()));
+        quickAddButton.setOnAction(e -> quickAddItem());
+
+        initStatsClicks();
+
+        // LOAD DATA
+        VirtualThreadExecutor.run(() -> {
+            borrowerService.load();
+            loanService.load();
+            itemService.load();
+            Platform.runLater(this::updateStats);
+        });
     }
 
-    private void setupNavigation() {
-        inventoryButton.setOnAction(e -> SceneManager.switchScene(
-                (Stage) inventoryButton.getScene().getWindow(), "/view/InventoryView.fxml"));
-        usersButton.setOnAction(e -> SceneManager.switchScene(
-                (Stage) usersButton.getScene().getWindow(), "/view/UsersView.fxml"));
-        historyButton.setOnAction(e -> SceneManager.switchScene(
-                (Stage) historyButton.getScene().getWindow(), "/view/HistoryView.fxml"));
+    // =========================================================
+    // ALERT HELPER
+    // =========================================================
+    private void alert(Alert.AlertType type, String msg) {
+        new Alert(type, msg).showAndWait();
     }
 
-    private void handleQuickAdd() {
-        String name = quickItemName.getText();
+    // =========================================================
+    // SCAN
+    // =========================================================
+    private void openScanDialog() {
+
+        VirtualThreadExecutor.run(borrowerService::load);
+
+        Dialog<String> dialog = createDialog("Scanner", "Scanner un item");
+        TextField field = new TextField();
+        field.setPromptText("scanner ici...");
+
+        VBox root = new VBox(20, field);
+        root.setAlignment(Pos.CENTER);
+
+        dialog.getDialogPane().setContent(root);
+        dialog.getDialogPane().getButtonTypes().add(new ButtonType("Annuler", ButtonBar.ButtonData.CANCEL_CLOSE));
+
+        Platform.runLater(field::requestFocus);
+
+        field.setOnAction(e -> {
+            String value = field.getText();
+            if (value == null || value.isBlank()) return;
+
+            VirtualThreadExecutor.run(() -> {
+                Item item = itemService.getItemById(value);
+
+                Platform.runLater(() -> {
+                    if (item == null) {
+                        alert(Alert.AlertType.ERROR, "Item non reconnu ❌");
+                    } else {
+                        dialog.close();
+                        openActionDialog(item);
+                    }
+                });
+
+            });
+        });
+        dialog.showAndWait();
+    }
+
+    // =========================================================
+    // ACTION DIALOG
+    // =========================================================
+    private void openActionDialog(Item item) {
+
+        Dialog<Void> dialog = createDialog("Actions", "Item : " + item.getId());
+        dialog.getDialogPane().getButtonTypes().add(new ButtonType("Annuler", ButtonBar.ButtonData.CANCEL_CLOSE));
+
+        ComboBox<Borrower> cb = createBorrowerComboBox();
+
+        Button emprunt = new Button("Emprunt");
+        Button retour = new Button("Retour");
+        Button info = new Button("Info");
+        emprunt.disableProperty().bind(cb.valueProperty().isNull());
+
+        HBox buttons = new HBox(10, emprunt, retour, info);
+        buttons.setAlignment(Pos.CENTER);
+
+        VBox root = new VBox(20, cb, buttons);
+        root.setAlignment(Pos.CENTER);
+
+        dialog.getDialogPane().setContent(root);
+
+        emprunt.setOnAction(e -> handleBorrow(item, cb.getValue(), dialog));
+        retour.setOnAction(e -> handleReturn(item, dialog));
+        info.setOnAction(e -> showItemInfo(item));
+
+        dialog.show();
+    }
+
+    private void showItemInfo(Item item) {
+
+        String message = "ID: " + item.getId() + "\n" + "Nom: " + item.getName() + "\n" +
+                        "Catégorie: " + item.getCategory() + "\n" + "Statut: " + item.getStatus();
+        alert(Alert.AlertType.INFORMATION, message);
+    }
+
+    // =========================================================
+    // BORROW
+    // =========================================================
+    private void handleBorrow(Item item, Borrower borrower, Dialog<?> dialog) {
+
+        VirtualThreadExecutor.run(() -> {
+            try {
+                Loan l = new Loan(item.getId(), borrower.getId());
+                loanService.createLoan(l);
+
+                Platform.runLater(() -> {
+                    updateStats();
+                    dialog.close();
+
+                    alert(Alert.AlertType.INFORMATION,
+                            "Emprunt enregistré !\nItem: " + item.getId() +
+                                    "\nUser: " + borrower.getFirstName() + " " + borrower.getLastName() +
+                                    "\nA remettre avant le : " + l.getDueDate()
+                                    .toLocalDate()
+                                    .format(DATE_FORMATTER)
+                    );
+                });
+
+            } catch (IllegalStateException e) {
+                Platform.runLater(() ->
+                        alert(Alert.AlertType.ERROR, e.getMessage()));
+            }
+        });
+    }
+
+    // =========================================================
+    // RETURN
+    // =========================================================
+    private void handleReturn(Item item, Dialog<?> dialog) {
+
+        VirtualThreadExecutor.run(() -> {
+            try {
+                Loan loan = loanService.getActiveLoans().stream()
+                        .filter(l -> l.getItemId().equals(item.getId())).findFirst()
+                        .orElseThrow(() -> new IllegalStateException("Aucun prêt actif trouvé pour " + item.getId()));
+
+                Loan updatedLoan = loanService.returnLoan(loan.getId());
+                Borrower borrower = borrowerService.getBorrowerById(loan.getBorrowerId());
+
+                Platform.runLater(() -> {
+                    updateStats();
+                    dialog.close();
+
+                    alert(Alert.AlertType.INFORMATION,
+                            "Retour OK\nItem: " + item.getId() +
+                                    "\nUser: " + borrower.getFirstName() + " " + borrower.getLastName() +
+                                    "\nRemis le : " + updatedLoan.getReturnDate()
+                                    .toLocalDate().format(DATE_FORMATTER)
+                    );
+                });
+
+            } catch (IllegalStateException e) {
+                Platform.runLater(() ->
+                        alert(Alert.AlertType.ERROR, e.getMessage()));
+            }
+        });
+    }
+
+    // =========================================================
+    // COMBOBOX
+    // =========================================================
+    private ComboBox<Borrower> createBorrowerComboBox() {
+
+        ComboBox<Borrower> cb = new ComboBox<>();
+        cb.setPrefWidth(250);
+        cb.setPromptText("Choisissez un utilisateur");
+        cb.setItems(borrowerService.getBorrowersObservable());
+
+        cb.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(Borrower b, boolean empty) {
+                super.updateItem(b, empty);
+                setText(empty || b == null ? null : format(b));
+            }
+        });
+
+        cb.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(Borrower b, boolean empty) {
+                super.updateItem(b, empty);
+                setText(empty || b == null ? null : format(b));
+            }
+        });
+        return cb;
+    }
+
+    // =========================================================
+    // STATS
+    // =========================================================
+    private void updateStats() {
+
+        VirtualThreadExecutor.run(() -> {
+             int active = loanService.countActiveLoans();
+             int late = loanService.countOverdueLoans();
+             int todayBorrow = loanService.countLoansToday();
+             int todayReturn = loanService.countReturnsToday();
+
+             Platform.runLater(() -> {
+                 borrowedLabel.setText(String.valueOf(active));
+                 lateLabel.setText(String.valueOf(late));
+                 todayBorrowLabel.setText(String.valueOf(todayBorrow));
+                 todayReturnLabel.setText(String.valueOf(todayReturn));
+             });
+
+        });
+    }
+
+    private void initStatsClicks() {
+
+        activeLoansBox.setOnMouseClicked(e ->
+                VirtualThreadExecutor.run(() -> {
+                    List<Loan> data = loanService.getActiveLoans();
+                    Platform.runLater(() -> showStatDialog("Emprunts actifs", data));
+                }));
+
+        overdueLoansBox.setOnMouseClicked(e ->
+                VirtualThreadExecutor.run(() -> {
+                    List<Loan> data = loanService.getOverdueLoans();
+                    Platform.runLater(() -> showStatDialog("Emprunts en retards", data));
+                }));
+
+        todayBorrowBox.setOnMouseClicked(e ->
+                VirtualThreadExecutor.run(() -> {
+                    List<Loan> data = loanService.getLoansByDateRange(LocalDate.now(), LocalDate.now());
+                    Platform.runLater(() -> showStatDialog("Emprunts du jour", data));
+                }));
+
+        todayReturnBox.setOnMouseClicked(e ->
+                VirtualThreadExecutor.run(() -> {
+                    List<Loan> data = loanService.getLoansObservable().stream()
+                            .filter(l -> l.getReturnDate() != null &&
+                                    l.getReturnDate().toLocalDate().equals(LocalDate.now())).toList();
+                        Platform.runLater(() -> showStatDialog("Remis du jour", data));
+                }));
+    }
+
+    // =========================================================
+    // TABLE
+    // =========================================================
+    private void showStatDialog(String title, List<Loan> loans) {
+
+        TableView<Loan> table = new TableView<>();
+
+        TableColumn<Loan, String> itemCol = new TableColumn<>("Item");
+        itemCol.setCellValueFactory(d ->
+                new SimpleStringProperty(d.getValue().getItemId()));
+
+        TableColumn<Loan, String> userCol = new TableColumn<>("User");
+        userCol.setCellValueFactory(d ->
+                new SimpleStringProperty(String.valueOf(d.getValue().getBorrowerId())));
+
+        TableColumn<Loan, String> dueCol = new TableColumn<>("Échéance");
+        dueCol.setCellValueFactory(d ->
+                new SimpleStringProperty(d.getValue().getDueDate().toLocalDate().format(DATE_FORMATTER)));
+
+        table.getColumns().addAll(List.of(itemCol, userCol, dueCol));
+        table.setItems(FXCollections.observableArrayList(loans));
+
+        Dialog<Void> dialog = createDialog(title, "Liste des prêts");
+        dialog.getDialogPane().setContent(table);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+
+        dialog.show();
+    }
+
+    // =========================================================
+    private <T> Dialog<T> createDialog(String title, String header) {
+
+        Dialog<T> d = new Dialog<>();
+        d.setTitle(title);
+        d.setHeaderText(header);
+        d.getDialogPane().setPrefSize(400, 200);
+
+        return d;
+    }
+
+    private void quickAddItem() {
+
+        String name = quickItemName.getText().trim().toUpperCase();
         ItemCategory cat = quickItemCategory.getValue();
 
-        if (name == null || name.isEmpty() || cat == null) {
-            showAlert("Erreur", "Veuillez remplir le nom et choisir une catégorie.");
+        if (name.isBlank() || cat == null) {
+            alert(Alert.AlertType.ERROR, "Nom et catégorie requis");
             return;
         }
 
-        // Création de l'objet (l'ID est généré par le constructeur à 4 paramètres)
-        Item newItem = new Item(name, cat, ItemStatus.AVAILABLE, "default_qr.png");
+        VirtualThreadExecutor.run(() -> {
 
-        itemService.createItem(newItem);
+            try {
+                itemService.addItem(new Item(name, cat, ItemStatus.AVAILABLE));
+                Platform.runLater(() -> {
+                    quickItemName.clear();
+                    quickItemCategory.setValue(null);
+                    updateStats();
+                    alert(Alert.AlertType.INFORMATION, "Item " + name + " ajouté avec succès");});
 
-        // Nettoyage des champs
-        quickItemName.clear();
-        quickItemCategory.setValue(null);
-
-        showAlert("Succès", "Matériel " + newItem.getId() + " ajouté avec succès !");
+            } catch (Exception e) {
+                Platform.runLater(() -> alert(Alert.AlertType.ERROR,
+                        "Une erreur s'est produite durant l'ajout"));
+            }
+        });
     }
 
-    private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
+    private String format(Borrower b) {
+        return b.getId() + " - " + b.getFirstName() + " " + b.getLastName();
     }
 }

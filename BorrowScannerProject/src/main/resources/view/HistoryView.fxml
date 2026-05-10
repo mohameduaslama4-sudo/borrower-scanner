@@ -3,59 +3,59 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx/25"
-            xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="be.esi.prj.controller.HistoryController">
 
     <!-- HEADER -->
     <top>
-        <VBox spacing="10" alignment="CENTER" style="-fx-padding: 10;">
+        <VBox spacing="20" alignment="CENTER" styleClass="header">
+
             <Label text="Historique des transactions"
-                   style="-fx-font-size: 24; -fx-font-weight: bold;"/>
+                   styleClass="title"/>
 
             <!-- NAVIGATION -->
-            <HBox spacing="15" alignment="CENTER">
-                <Button fx:id="dashboardButton" text="🏠 Dashboard"/>
-                <Button fx:id="inventoryButton" text="🛠️ Inventaire"/>
-                <Button fx:id="usersButton" text="👤 Utilisateurs"/>
-                <Button text="📜 Historique" disable="true"/>
+            <HBox spacing="20" alignment="CENTER" styleClass="nav-bar">
+
+                <Button fx:id="dashboardButton" text="🏠 Dashboard" styleClass="nav-button"/>
+                <Button fx:id="inventoryButton" text="🛠️ Inventaire" styleClass="nav-button"/>
+                <Button fx:id="usersButton" text="👤 Utilisateurs" styleClass="nav-button"/>
+                <Button text="📜 Historique" disable="true" styleClass="nav-button"/>
+
             </HBox>
 
             <Separator/>
         </VBox>
     </top>
 
-    <!-- CONTENU PRINCIPALE-->
+    <!-- CONTENU PRINCIPAL -->
     <center>
 
-        <VBox spacing="15" style="-fx-padding: 15;" VBox.vgrow="ALWAYS" >
+        <VBox spacing="20" alignment="CENTER" VBox.vgrow="ALWAYS" styleClass="main-container">
 
-            <!-- BARRE DE RECHERCHE & FILTRES SUR UNE LIGNE -->
-            <HBox spacing="10" alignment="CENTER_LEFT">
+            <!-- BARRE DE FILTRES -->
+            <HBox spacing="10" alignment="CENTER" styleClass="filter-bar">
 
-                <!-- Barre de recherche -->
-                <TextField fx:id="searchLogField"
-                           promptText="Rechercher (matériel, utilisateur...)"
-                           prefWidth="250"/>
-                <Button fx:id="searchButton" text="🔍"/>
+                <TextField fx:id="searchLogField" promptText="Rechercher (matériel, utilisateur...)"
+                           prefWidth="250" styleClass="text-field"/>
 
-                <!-- Combobox Action & Tri -->
-                <ComboBox fx:id="filterAction" promptText="Action" prefWidth="120"/>
-                <ComboBox fx:id="sortDate" promptText="Trier par date" prefWidth="120"/>
+                <ComboBox fx:id="filterAction" promptText="Action" styleClass="combo-box"/>
+                <ComboBox fx:id="sortDate" promptText="Trier par date" styleClass="combo-box"/>
 
-                <!-- DatePicker Début & Fin -->
-                <DatePicker fx:id="startDatePicker" promptText="Début" prefWidth="120"/>
-                <DatePicker fx:id="endDatePicker" promptText="Fin" prefWidth="120"/>
+                <DatePicker fx:id="startDatePicker" promptText="Début" prefWidth="150" styleClass="date-picker"/>
+                <DatePicker fx:id="endDatePicker" promptText="Fin" prefWidth="150" styleClass="date-picker"/>
 
             </HBox>
 
-            <!-- Table des transactions -->
-            <TableView fx:id="logTable" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS">
+            <!-- TABLE -->
+            <TableView fx:id="logTable" maxWidth="920" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS" styleClass="table-view">
                 <columns>
-                    <TableColumn fx:id="colDate" text="Date" prefWidth="150" resizable="false"/>
-                    <TableColumn fx:id="colItem" text="Matériel" prefWidth="150" resizable="false"/>
-                    <TableColumn fx:id="colBorrower" text="Utilisateur" prefWidth="150" resizable="false"/>
-                    <TableColumn fx:id="colAction" text="Action" prefWidth="150" resizable="false"/>
+                    <TableColumn fx:id="colLoanId" text="ID" prefWidth="80"/>
+                    <TableColumn fx:id="colItem" text="Matériel" prefWidth="120"/>
+                    <TableColumn fx:id="colBorrower" text="Utilisateur" prefWidth="120"/>
+                    <TableColumn fx:id="colBorrowDate" text="Prêt" prefWidth="150"/>
+                    <TableColumn fx:id="colDueDate" text="Échéance" prefWidth="150"/>
+                    <TableColumn fx:id="colReturnDate" text="Retour" prefWidth="150"/>
+                    <TableColumn fx:id="colStatus" text="Statut" prefWidth="150"/>
                 </columns>
             </TableView>
 

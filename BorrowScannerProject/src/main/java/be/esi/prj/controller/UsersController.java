@@ -1,109 +1,265 @@
 package be.esi.prj.controller;
 
-import be.esi.prj.model.Borrower;
-import be.esi.prj.service.BorrowerService;
+import be.esi.prj.model.*;
+import be.esi.prj.service.*;
 import be.esi.prj.util.SceneManager;
+import be.esi.prj.util.VirtualThreadExecutor;
+import javafx.application.Platform;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
 public class UsersController {
 
-    @FXML private Button dashboardButton, inventoryButton, historyButton;
-    @FXML private Button addUserButton, cancelAddButton, confirmAddButton;
+    private final BorrowerService borrowerService = BorrowerService.getInstance();
+    private final LoanService loanService = LoanService.getInstance();
+
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    @FXML private Button dashboardButton;
+    @FXML private Button inventoryButton;
+    @FXML private Button historyButton;
 
     @FXML private TableView<Borrower> userTable;
     @FXML private TableColumn<Borrower, Integer> colId;
     @FXML private TableColumn<Borrower, String> colLastName;
     @FXML private TableColumn<Borrower, String> colFirstName;
     @FXML private TableColumn<Borrower, String> colEmail;
-    @FXML private VBox addUserForm;
-    @FXML private TextField newLastName, newFirstName, newEmail;
 
-    private final BorrowerService borrowerService = new BorrowerService();
-    private final ObservableList<Borrower> users = FXCollections.observableArrayList();
+    @FXML private TextField searchUserField;
+
+    @FXML private VBox rightPane;
+    @FXML private Label detailLastNameLabel;
+    @FXML private Label detailFirstNameLabel;
+    @FXML private Label detailEmailLabel;
+
+    @FXML private Label currentLoansCountLabel;
+    @FXML private ListView<String> currentLoansList;
+    @FXML private ListView<String> recentHistoryList;
+
+    @FXML private Button updateEmailButton;
+    @FXML private Button deleteUserButton;
+
+    @FXML private VBox addUserForm;
+    @FXML private TextField newLastName;
+    @FXML private TextField newFirstName;
+    @FXML private TextField newEmail;
+
+    @FXML private Button addUserButton;
+    @FXML private Button cancelAddButton;
+    @FXML private Button confirmAddButton;
+
+    private FilteredList<Borrower> filteredBorrowers;
 
     @FXML
     public void initialize() {
-        setupNavigation();
-        setupAddUserForm();
 
-        // Liaison colonnes <-> Attributs de la classe Borrower
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colLastName.setCellValueFactory(new PropertyValueFactory<>("lastName"));
-        colFirstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
-        colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+        initNavigation();
+        initTable();
+        initActions();
 
-        userTable.setItems(users);
-        refreshTable();
+        borrowerService.load();
+        loanService.load();
+        filteredBorrowers = new FilteredList<>(borrowerService.getBorrowersObservable(), b -> true);
+        userTable.setItems(filteredBorrowers);
     }
 
-    private void setupNavigation() {
-        dashboardButton.setOnAction(e -> SceneManager.switchScene((Stage) dashboardButton.getScene().getWindow(), "/view/DashBoardView.fxml"));
-        inventoryButton.setOnAction(e -> SceneManager.switchScene((Stage) inventoryButton.getScene().getWindow(), "/view/InventoryView.fxml"));
-        historyButton.setOnAction(e -> SceneManager.switchScene((Stage) historyButton.getScene().getWindow(), "/view/HistoryView.fxml"));
+    private void initNavigation() {
+
+        dashboardButton.setOnAction(e ->
+                SceneManager.switchScene((Stage) dashboardButton.getScene().getWindow(), "DashBoardView.fxml"));
+
+        inventoryButton.setOnAction(e ->
+                SceneManager.switchScene((Stage) inventoryButton.getScene().getWindow(), "InventoryView.fxml"));
+
+        historyButton.setOnAction(e ->
+                SceneManager.switchScene((Stage) historyButton.getScene().getWindow(), "HistoryView.fxml"));
     }
 
-    private void setupAddUserForm() {
-        toggleAddForm(false);
+    private void initTable() {
+
+        colId.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getId()));
+        colLastName.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getLastName()));
+        colFirstName.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getFirstName()));
+        colEmail.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getEmail()));
+
+        userTable.getSelectionModel().selectedItemProperty()
+                .addListener((obs, old, selected) -> showDetails(selected));
+    }
+
+    private void initActions() {
+
+        searchUserField.textProperty().addListener((o, a, b) -> applyFilter(b));
+
         addUserButton.setOnAction(e -> toggleAddForm(true));
         cancelAddButton.setOnAction(e -> toggleAddForm(false));
-        confirmAddButton.setOnAction(e -> handleConfirmAddUser());
+        confirmAddButton.setOnAction(e -> addUser());
+
+        updateEmailButton.setOnAction(e -> updateEmail());
+        deleteUserButton.setOnAction(e -> deleteUser());
     }
 
-    private void handleConfirmAddUser() {
-        String lastName = safeTrim(newLastName.getText());
-        String firstName = safeTrim(newFirstName.getText());
-        String email = safeTrim(newEmail.getText());
+    private void applyFilter(String keyword) {
 
-        if (lastName.isEmpty() || firstName.isEmpty() || email.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Champs incomplets");
-            alert.setHeaderText(null);
-            alert.setContentText("Veuillez remplir nom, prénom et email.");
-            alert.showAndWait();
+        if (keyword == null || keyword.isBlank()) {
+            filteredBorrowers.setPredicate(b -> true);
             return;
         }
 
-        try {
-            borrowerService.createBorrower(firstName, lastName, email);
-            refreshTable();
-            toggleAddForm(false);
+        String lower = keyword.toLowerCase();
+        filteredBorrowers.setPredicate(b -> b.getFirstName().toLowerCase().contains(lower)
+                || b.getLastName().toLowerCase().contains(lower) || b.getEmail().toLowerCase().contains(lower));
+    }
 
-            if (!users.isEmpty()) {
-                Borrower inserted = users.get(users.size() - 1);
-                userTable.getSelectionModel().select(inserted);
-                userTable.scrollTo(inserted);
+    private void showDetails(Borrower b) {
+
+        if (b == null) {
+            rightPane.setVisible(false);
+            rightPane.setManaged(false);
+            return;
+        }
+
+        rightPane.setVisible(true);
+        rightPane.setManaged(true);
+
+        detailLastNameLabel.setText(b.getLastName());
+        detailFirstNameLabel.setText(b.getFirstName());
+        detailEmailLabel.setText(b.getEmail());
+
+        loadUserLoans(b);
+    }
+
+    private void loadUserLoans(Borrower b) {
+
+        VirtualThreadExecutor.run(() -> {
+
+            List<Loan> allLoans = loanService.getLoansByBorrower(b.getId());
+            List<Loan> currentLoans = allLoans.stream().filter(l -> l.getReturnDate() == null).toList();
+            List<String> current = currentLoans.stream().map(this::formatCurrentLoan).toList();
+            List<String> history = allLoans.stream().sorted((a, c) ->
+                            c.getBorrowedDate().compareTo(a.getBorrowedDate())).limit(10).map(this::formatHistoryLoan).toList();
+
+                Platform.runLater(() -> {
+                    currentLoansCountLabel.setText("Emprunts en cours : " + currentLoans.size());
+                    currentLoansList.setItems(FXCollections.observableArrayList(current));
+                    recentHistoryList.setItems(FXCollections.observableArrayList(history));
+                });
+        });
+    }
+
+    private String formatCurrentLoan(Loan l) {
+        return l.getItemId() + " | À rendre avant le " + l.getDueDate().toLocalDate().format(FORMATTER);
+    }
+
+    private String formatHistoryLoan(Loan l) {
+
+        String status = (l.getReturnDate() == null) ? "En cours"
+                : "Remis le " + l.getReturnDate().toLocalDate().format(FORMATTER);
+
+        return l.getBorrowedDate().toLocalDate().format(FORMATTER) + " | " + l.getItemId() + " | " + status;
+    }
+
+    private void addUser() {
+
+        String last = newLastName.getText().toUpperCase();
+        String first = newFirstName.getText().toUpperCase();
+        String email = newEmail.getText().toUpperCase();
+
+        VirtualThreadExecutor.run(() -> {
+
+            try {
+                Borrower b = borrowerService.addBorrower(last, first, email);
+
+                Platform.runLater(() -> {
+                    borrowerService.getBorrowersObservable().add(b);
+                    clearForm();
+                    toggleAddForm(false);
+                    alert(Alert.AlertType.INFORMATION, "Utilisateur ajouté");
+                });
+
+            } catch (IllegalArgumentException e) {
+                Platform.runLater(() ->
+                        alert(Alert.AlertType.ERROR, e.getMessage())
+                );
+
+            } catch (Exception e) {
+                Platform.runLater(() -> alert(Alert.AlertType.ERROR,
+                        "Une erreur s'est produite lors de l'ajout"));
             }
-        } catch (Exception ex) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Erreur de sauvegarde");
-            alert.setHeaderText(null);
-            alert.setContentText("Impossible d'enregistrer le nouvel utilisateur.");
-            alert.showAndWait();
-        }
+        });
     }
 
-    private void toggleAddForm(boolean visible) {
-        addUserForm.setVisible(visible);
-        addUserForm.setManaged(visible);
+    private void deleteUser() {
 
-        if (!visible) {
-            newLastName.clear();
-            newFirstName.clear();
-            newEmail.clear();
-        }
+        Borrower selected = userTable.getSelectionModel().getSelectedItem();
+        if (selected == null) return;
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                selected.getFirstName() + " " + selected.getLastName());
+        confirm.setHeaderText("Voulez-vous vraiment supprimer cet utilisateur ?");
+
+        confirm.showAndWait().ifPresent(result -> {
+            if (result == ButtonType.OK) {
+                VirtualThreadExecutor.run(() -> {
+                    borrowerService.deleteBorrower(selected.getId());
+                    Platform.runLater(() -> {
+                        borrowerService.getBorrowersObservable().remove(selected);
+                        showDetails(null);
+                    });
+                });
+            }
+        });
     }
 
-    private String safeTrim(String value) {
-        return value == null ? "" : value.trim();
+    private void updateEmail() {
+
+        Borrower selected = userTable.getSelectionModel().getSelectedItem();
+        if (selected == null) return;
+
+        TextInputDialog dialog = new TextInputDialog(selected.getEmail());
+        dialog.setHeaderText("Modifier email");
+        dialog.showAndWait().ifPresent(mail -> {
+
+            VirtualThreadExecutor.run(() -> {
+                try {
+                    borrowerService.updateBorrowerEmail(selected.getId(), mail);
+                    Platform.runLater(() -> {
+                        userTable.refresh();
+                        showDetails(selected);
+                    });
+
+                } catch (IllegalArgumentException e) {
+                    Platform.runLater(() -> alert(Alert.AlertType.ERROR, e.getMessage()));
+
+                } catch (Exception e) {
+                    Platform.runLater(() -> alert(Alert.AlertType.ERROR,
+                            "Une erreur s'est produite durant la màj"));
+                }
+            });
+        });
     }
 
-    private void refreshTable() {
-        users.setAll(borrowerService.getAllBorrowers());
+    private void toggleAddForm(boolean show) {
+        addUserForm.setVisible(show);
+        addUserForm.setManaged(show);
+    }
+
+    private void clearForm() {
+        newLastName.clear();
+        newFirstName.clear();
+        newEmail.clear();
+    }
+
+    private void alert(Alert.AlertType type, String msg) {
+        new Alert(type, msg).showAndWait();
     }
 }

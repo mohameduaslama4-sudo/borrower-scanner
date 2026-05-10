@@ -1,64 +1,76 @@
 package be.esi.prj.service;
 
-import be.esi.prj.model.Item;
-import be.esi.prj.model.ItemCategory;
-import be.esi.prj.model.ItemStatus;
-import be.esi.prj.repository.ItemRepository;
-import be.esi.prj.repository.ItemRepositoryImpl;
+import be.esi.prj.model.*;
+import be.esi.prj.repository.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import java.util.List;
 
 public class ItemService {
 
-    private final ItemRepository itemRepository;
+    private static final ItemService INSTANCE = new ItemService();
+    private final QRService qrService =  new QRService();
+    private final ItemRepository itemRepository = new ItemRepositoryImpl();
+    private final ObservableList<Item> items = FXCollections.observableArrayList();
 
-    public ItemService() {
-        this(new ItemRepositoryImpl());
-    }
+    private ItemService() {}
 
-    public ItemService(ItemRepository itemRepository) {
-        this.itemRepository = itemRepository;
+    public static ItemService getInstance() { return INSTANCE; }
+
+    // ================= LOAD
+    public ObservableList<Item> load() {
+        items.setAll(getAllItems());
+        return items;
     }
 
     public List<Item> getAllItems() {
         return itemRepository.findAll();
     }
+    // ================= GET
+    public ObservableList<Item> getItemsObservable() {
+        return items;
+    }
 
     public Item getItemById(String id) {
-        return itemRepository.findById(id);
+        return items.stream()
+                .filter(i -> i.getId().equals(id))
+                .findFirst()
+                .orElse(null);
     }
 
-    public List<Item> searchByName(String keyword) {
-        return itemRepository.searchByName(keyword);
-    }
-
-    public List<Item> getByCategory(ItemCategory category) {
-        return itemRepository.findByCategory(category);
-    }
-
-    public List<Item> getByStatus(ItemStatus status) {
-        return itemRepository.findByStatus(status);
-    }
-
-    public List<Item> getByCategoryAndStatus(ItemCategory category, ItemStatus status) {
-        return itemRepository.findByCategoryAndStatus(category, status);
-    }
-
-    public Item createItem(String name, ItemCategory category, ItemStatus status, String qrPath) {
-        Item item = new Item(name, category, status, qrPath);
+    // ================= CREATE
+    public Item addItem(Item item) {
+        validate(item);
         itemRepository.insert(item);
+        items.add(item);
+        qrService.generateQRCode(item.getId());
         return item;
     }
 
-    public void createItem(Item item) {
-        itemRepository.insert(item);
-    }
-
+    // ================= UPDATE CATEGORY OR STATUT
     public void updateItem(Item item) {
+
         itemRepository.update(item);
+        int index = items.indexOf(item);
+        if (index != -1) {
+            items.set(index, item);
+        }
     }
 
+    // ================= DELETE
     public void deleteItem(String id) {
         itemRepository.delete(id);
+        items.removeIf(i -> i.getId().equals(id));
+    }
+
+    // ================= VALIDATION
+    private void validate(Item item) {
+
+        if (item.getName() == null || item.getName().isBlank())
+            throw new IllegalArgumentException("Name required");
+
+        if (item.getCategory() == null)
+            throw new IllegalArgumentException("Category required");
     }
 }
