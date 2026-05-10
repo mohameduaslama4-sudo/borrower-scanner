@@ -24,6 +24,7 @@ public class QRService {
         try {
             String filePath = FOLDER + File.separator + content + ".png";
             Path qrPath = new File(filePath).toPath();
+            Files.createDirectories(qrPath.getParent());
 
             QRCodeWriter writer = new QRCodeWriter();
             BitMatrix matrix = writer.encode(content, BarcodeFormat.QR_CODE, 300, 300);
