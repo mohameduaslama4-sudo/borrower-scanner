@@ -3,17 +3,23 @@ package be.esi.prj.util;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Utility class that provides an executor based on Java virtual threads.
+ * <p>
+ * Used to run asynchronous tasks efficiently without blocking the main thread.
+ */
 public final class VirtualThreadExecutor {
 
-    // Executor basé sur les virtual threads (Java 21+)
+    // Executor based on virtual threads
     private static final ExecutorService EXECUTOR =
             Executors.newVirtualThreadPerTaskExecutor();
 
-    // Empêche l’instanciation
     private VirtualThreadExecutor() {}
 
     /**
-     * Exécute une tâche en asynchrone avec un virtual thread
+     * Executes a task asynchronously using a virtual thread.
+     *
+     * @param task the task to execute
      */
     public static void run(Runnable task) {
         EXECUTOR.submit(task);

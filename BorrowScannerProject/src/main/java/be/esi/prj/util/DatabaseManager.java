@@ -4,6 +4,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.*;
 
+/**
+ * Manages the SQLite database connection and initialization.
+ * <p>
+ * Responsible for creating the database file, ensuring required folders exist,
+ * and initializing the database schema (tables and constraints).
+ */
 public class DatabaseManager {
 
     private static final String DB_URL = "jdbc:sqlite:external-data/borrow_manager.db";
@@ -13,6 +19,11 @@ public class DatabaseManager {
         initDatabase();
     }
 
+    /**
+     * Returns the singleton instance of the DatabaseManager.
+     *
+     * @return the DatabaseManager instance
+     */
     public static DatabaseManager getInstance() {
         if (instance == null) {
             instance = new DatabaseManager();
@@ -20,9 +31,14 @@ public class DatabaseManager {
         return instance;
     }
 
-    // =====================================================
-    // CONNECTION
-    // =====================================================
+    /**
+     * Creates and returns a connection to the SQLite database.
+     * <p>
+     * Also enables foreign key constraints.
+     *
+     * @return a database connection
+     * @throws RuntimeException if the connection fails
+     */
     public Connection getConnection() {
         try {
             Connection conn = DriverManager.getConnection(DB_URL);
@@ -38,9 +54,13 @@ public class DatabaseManager {
         }
     }
 
-    // =====================================================
-    // INIT DATABASE
-    // =====================================================
+    /**
+     * Initializes the database structure.
+     * <p>
+     * Creates required folders, tables, and constraints if they do not exist.
+     *
+     * @throws RuntimeException if initialization fails
+     */
     private void initDatabase() {
 
         try {
