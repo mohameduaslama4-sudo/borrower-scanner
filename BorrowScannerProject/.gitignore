@@ -38,5 +38,5 @@ build/
 ### Mac OS ###
 .DS_Store
 
-### Database ###
-*.db
+### Data Storage ###
+external-data/
