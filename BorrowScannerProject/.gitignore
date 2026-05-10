@@ -39,4 +39,4 @@ build/
 .DS_Store
 
 ### Data Storage ###
-external-data/
+external-data/qrcodes/*
