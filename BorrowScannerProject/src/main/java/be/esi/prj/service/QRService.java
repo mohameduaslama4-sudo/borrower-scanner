@@ -12,13 +12,22 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * Service responsible for generating, storing, and exporting QR codes.
+ * <p>
+ * Uses ZXing library to generate QR codes and manages file operations
+ * related to QR code storage and download.
+ */
 public class QRService {
 
     private static final String FOLDER = "external-data/qrcodes";
 
-    // =====================================================
-    // GENERATE QR
-    // =====================================================
+    /**
+     * Generates a QR code image from the given content and stores it locally.
+     *
+     * @param content the data to encode into the QR code
+     * @throws IllegalStateException if QR generation fails
+     */
     public void generateQRCode(String content) {
 
         try {
@@ -34,9 +43,13 @@ public class QRService {
         }
     }
 
-    // =====================================================
-    // DOWNLOAD QR
-    // =====================================================
+    /**
+     * Copies a QR code file to a user-selected destination.
+     *
+     * @param sourcePath path of the existing QR code file
+     * @param destination target destination path
+     * @throws IllegalStateException if the file cannot be copied
+     */
     public void downloadQRCode(String sourcePath, Path destination) {
 
         try {
@@ -50,6 +63,13 @@ public class QRService {
     // FOLDER MANAGEMENT
     // =====================================================
 
+    /**
+     * Opens a file chooser dialog to select a destination for downloading a QR code.
+     *
+     * @param defaultName default file name without extension
+     * @param window the JavaFX window used as dialog owner
+     * @return selected file path or null if cancelled
+     */
     public Path chooseDownloadDestination(String defaultName, Window window) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Télécharger QR Code");
