@@ -1,8 +1,11 @@
 package be.esi.prj.util;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.*;
+import java.util.Properties;
 
 /**
  * Manages the SQLite database connection and initialization.
@@ -12,10 +15,12 @@ import java.sql.*;
  */
 public class ConnectionManager {
 
-    private static final String DB_URL = "jdbc:sqlite:external-data/borrow_manager.db";
     private static ConnectionManager instance;
+    private Properties properties;
+    private Connection connection;
 
     private ConnectionManager() {
+        loadProperties();
         initDatabase();
     }
 
@@ -32,6 +37,25 @@ public class ConnectionManager {
     }
 
     /**
+     * Loads database configuration properties from the properties file.
+     * <p>
+     * This method reads the "database.properties" file and initializes
+     * the {@link Properties} object used for database connection settings.
+     *
+     * @throws RuntimeException if the properties file cannot be read or found
+     */
+    private void loadProperties() {
+        if (properties == null) {
+            properties = new Properties();
+            try (InputStream input = ConnectionManager.class.getClassLoader().getResourceAsStream("database.properties")) {
+                properties.load(input);
+            } catch (IOException e) {
+                throw new RuntimeException("Properties file unreadable", e);
+            }
+        }
+    }
+
+    /**
      * Creates and returns a connection to the SQLite database.
      * <p>
      * Also enables foreign key constraints.
@@ -41,23 +65,30 @@ public class ConnectionManager {
      */
     public Connection getConnection() {
         try {
-            Connection conn = DriverManager.getConnection(DB_URL);
+            if (connection == null || connection.isClosed()) {
 
-            try (Statement stmt = conn.createStatement()) {
-                stmt.execute("PRAGMA foreign_keys = ON");
+                String url = properties.getProperty("db.url");
+                String user = properties.getProperty("db.user");
+                String password = properties.getProperty("db.password");
+
+                connection = DriverManager.getConnection(url, user, password);
+
+                try (Statement stmt = connection.createStatement()) {
+                    stmt.execute("PRAGMA foreign_keys = ON");
+                }
             }
-
-            return conn;
+            return connection;
 
         } catch (SQLException e) {
-            throw new RuntimeException("DB connection error", e);
+                throw new RuntimeException("DB connection error", e);
         }
     }
 
     /**
-     * Initializes the database structure.
+     * Initializes the database structure at startup.
      * <p>
-     * Creates required folders, tables, and constraints if they do not exist.
+     * Creates the required folders and database tables if they do not exist.
+     * This method is called once during instantiation.
      *
      * @throws RuntimeException if initialization fails
      */
