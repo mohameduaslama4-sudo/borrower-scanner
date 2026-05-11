@@ -1,7 +1,7 @@
 package be.esi.prj.repository;
 
 import be.esi.prj.model.*;
-import be.esi.prj.util.DatabaseManager;
+import be.esi.prj.util.ConnectionManager;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,7 @@ public class ItemRepositoryImpl implements ItemRepository {
         List<Item> list = new ArrayList<>();
         String sql = "SELECT id, name, category, status, qr_path FROM items";
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = ConnectionManager.getInstance().getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -53,7 +53,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     public void insert(Item i) {
         String sql = "INSERT INTO items(id, name, category, status, qr_path) VALUES(?,?,?,?,?)";
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = ConnectionManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, i.getId());
@@ -75,7 +75,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     @Override
     public void update(Item i) {
         String sql = "UPDATE items SET category=?, status=? WHERE id=?";
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = ConnectionManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, i.getCategory().name());
             pstmt.setString(2, i.getStatus().name());
@@ -89,7 +89,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     // =========================
     @Override public void delete(String id) {
         String sql = "DELETE FROM items WHERE id=?";
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = ConnectionManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, id);
             pstmt.executeUpdate();

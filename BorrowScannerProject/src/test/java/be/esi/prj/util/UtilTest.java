@@ -24,7 +24,7 @@ class UtilTest {
 
     @Test
     void databaseManagerCreatesTablesAndEnablesForeignKeys() throws Exception {
-        try (Connection connection = DatabaseManager.getInstance().getConnection();
+        try (Connection connection = ConnectionManager.getInstance().getConnection();
              Statement statement = connection.createStatement()) {
 
             ResultSet foreignKeys = statement.executeQuery("PRAGMA foreign_keys");

@@ -1,7 +1,7 @@
 package be.esi.prj.repository;
 
 import be.esi.prj.model.Loan;
-import be.esi.prj.util.DatabaseManager;
+import be.esi.prj.util.ConnectionManager;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -46,7 +46,7 @@ public class LoanRepositoryImpl implements LoanRepository {
         List<Loan> list = new ArrayList<>();
         String sql = "SELECT id, item_id, borrower_id, borrowed_date, due_date, return_date FROM loans";
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = ConnectionManager.getInstance().getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -69,7 +69,7 @@ public class LoanRepositoryImpl implements LoanRepository {
         List<Loan> list = new ArrayList<>();
         String sql = "SELECT id, item_id, borrower_id, borrowed_date, due_date, return_date FROM loans WHERE return_date IS NULL";
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = ConnectionManager.getInstance().getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -92,7 +92,7 @@ public class LoanRepositoryImpl implements LoanRepository {
         List<Loan> list = new ArrayList<>();
         String sql = "SELECT id, item_id, borrower_id, borrowed_date, due_date, return_date FROM loans WHERE due_date < ? AND return_date IS NULL";
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = ConnectionManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, LocalDateTime.now().toString());
@@ -119,7 +119,7 @@ public class LoanRepositoryImpl implements LoanRepository {
         List<Loan> list = new ArrayList<>();
         String sql = "SELECT id, item_id, borrower_id, borrowed_date, due_date, return_date FROM loans WHERE borrowed_date BETWEEN ? AND ?";
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = ConnectionManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, start.atStartOfDay().toString());
@@ -145,7 +145,7 @@ public class LoanRepositoryImpl implements LoanRepository {
     public void insert(Loan l) {
         String sql = "INSERT INTO loans(id, item_id, borrower_id, borrowed_date, due_date, return_date) VALUES(?,?,?,?,?,?)";
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = ConnectionManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, l.getId());
@@ -169,7 +169,7 @@ public class LoanRepositoryImpl implements LoanRepository {
     public void update(Loan l) {
         String sql = "UPDATE loans SET due_date=?, return_date=? WHERE id=?";
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = ConnectionManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, l.getDueDate().toString());

@@ -10,23 +10,23 @@ import java.sql.*;
  * Responsible for creating the database file, ensuring required folders exist,
  * and initializing the database schema (tables and constraints).
  */
-public class DatabaseManager {
+public class ConnectionManager {
 
     private static final String DB_URL = "jdbc:sqlite:external-data/borrow_manager.db";
-    private static DatabaseManager instance;
+    private static ConnectionManager instance;
 
-    private DatabaseManager() {
+    private ConnectionManager() {
         initDatabase();
     }
 
     /**
-     * Returns the singleton instance of the DatabaseManager.
+     * Returns the singleton instance of the ConnectionManager.
      *
-     * @return the DatabaseManager instance
+     * @return the ConnectionManager instance
      */
-    public static DatabaseManager getInstance() {
+    public static ConnectionManager getInstance() {
         if (instance == null) {
-            instance = new DatabaseManager();
+            instance = new ConnectionManager();
         }
         return instance;
     }

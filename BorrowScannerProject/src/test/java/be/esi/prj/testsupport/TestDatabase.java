@@ -3,7 +3,7 @@ package be.esi.prj.testsupport;
 import be.esi.prj.service.BorrowerService;
 import be.esi.prj.service.ItemService;
 import be.esi.prj.service.LoanService;
-import be.esi.prj.util.DatabaseManager;
+import be.esi.prj.util.ConnectionManager;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,9 +20,9 @@ public final class TestDatabase {
     public static void reset() {
         try {
             Files.createDirectories(Path.of("external-data", "qrcodes"));
-            DatabaseManager.getInstance();
+            ConnectionManager.getInstance();
 
-            try (Connection connection = DatabaseManager.getInstance().getConnection();
+            try (Connection connection = ConnectionManager.getInstance().getConnection();
                  Statement statement = connection.createStatement()) {
                 statement.execute("DELETE FROM loans");
                 statement.execute("DELETE FROM items");

@@ -1,7 +1,7 @@
 package be.esi.prj.repository;
 
 import be.esi.prj.model.Borrower;
-import be.esi.prj.util.DatabaseManager;
+import be.esi.prj.util.ConnectionManager;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ public class BorrowerRepositoryImpl implements BorrowerRepository {
         List<Borrower> users = new ArrayList<>();
         String sql = "SELECT id, first_name, last_name, email FROM borrowers";
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = ConnectionManager.getInstance().getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -54,7 +54,7 @@ public class BorrowerRepositoryImpl implements BorrowerRepository {
     public int insert(Borrower b) {
         String sql = "INSERT INTO borrowers(first_name, last_name, email) VALUES(?,?,?)";
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = ConnectionManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql,  Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setString(1, b.getFirstName());
@@ -80,7 +80,7 @@ public class BorrowerRepositoryImpl implements BorrowerRepository {
     public void updateEmail(Borrower b) {
         String sql = "UPDATE borrowers SET email=? WHERE id=?";
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = ConnectionManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, b.getEmail());
@@ -99,7 +99,7 @@ public class BorrowerRepositoryImpl implements BorrowerRepository {
     public void delete(int id) {
         String sql = "DELETE FROM borrowers WHERE id=?";
 
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
+        try (Connection conn = ConnectionManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, id);
