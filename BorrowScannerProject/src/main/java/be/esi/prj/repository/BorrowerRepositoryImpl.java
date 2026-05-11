@@ -48,62 +48,6 @@ public class BorrowerRepositoryImpl implements BorrowerRepository {
     }
 
     // =========================
-    // FIND BY ID
-    // =========================
-    @Override
-    public Borrower findById(int id) {
-        String sql = "SELECT id, first_name, last_name, email FROM borrowers WHERE id = ?";
-
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, id);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSet(rs);
-                }
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Error finding borrower by id", e);
-        }
-
-        return null;
-    }
-
-    // =========================
-    // SEARCH
-    // =========================
-    @Override
-    public List<Borrower> findByNameOrSurname(String keyword) {
-        List<Borrower> users = new ArrayList<>();
-        String sql = """
-                SELECT id, first_name, last_name, email
-                FROM borrowers
-                WHERE first_name LIKE ? OR last_name LIKE ?
-                """;
-
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, "%" + keyword + "%");
-            pstmt.setString(2, "%" + keyword + "%");
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    users.add(mapResultSet(rs));
-                }
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Error searching borrowers", e);
-        }
-
-        return users;
-    }
-
-    // =========================
     // INSERT
     // =========================
     @Override

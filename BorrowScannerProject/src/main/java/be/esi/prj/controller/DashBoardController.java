@@ -17,15 +17,21 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+/**
+ * Controller responsible for managing the dashboard view.
+ * <p>
+ * Handles navigation, statistics display, quick item creation,
+ * borrowing/return workflows, and QR scan interactions.
+ */
 public class DashBoardController {
 
-    // ================= SERVICES
+    // SERVICES
     private final BorrowerService borrowerService = BorrowerService.getInstance();
     private final LoanService loanService = LoanService.getInstance();
     private final ItemService itemService = ItemService.getInstance();
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    // NAV
+    // NAVIGATION
     @FXML private Button inventoryButton;
     @FXML private Button usersButton;
     @FXML private Button historyButton;
@@ -37,15 +43,23 @@ public class DashBoardController {
     @FXML private VBox todayBorrowBox;
     @FXML private VBox todayReturnBox;
 
+    // LABELS
     @FXML private Label borrowedLabel;
     @FXML private Label lateLabel;
     @FXML private Label todayBorrowLabel;
     @FXML private Label todayReturnLabel;
 
+    // QUICK FORM
     @FXML private TextField quickItemName;
     @FXML private ComboBox<ItemCategory> quickItemCategory;
     @FXML private Button quickAddButton;
 
+    /**
+     * Initializes the dashboard view and loads application data.
+     * <p>
+     * Sets navigation actions, initializes statistics interactions,
+     * and loads borrowers, items, and loans asynchronously.
+     */
     @FXML
     public void initialize() {
 
@@ -74,16 +88,19 @@ public class DashBoardController {
         });
     }
 
-    // =========================================================
-    // ALERT HELPER
-    // =========================================================
+    /**
+     * Displays a simple alert dialog.
+     *
+     * @param type alert type
+     * @param msg message to display
+     */
     private void alert(Alert.AlertType type, String msg) {
         new Alert(type, msg).showAndWait();
     }
 
-    // =========================================================
-    // SCAN
-    // =========================================================
+    /**
+     * Opens the QR scan dialog used to identify an item.
+     */
     private void openScanDialog() {
 
         VirtualThreadExecutor.run(borrowerService::load);
@@ -121,9 +138,11 @@ public class DashBoardController {
         dialog.showAndWait();
     }
 
-    // =========================================================
-    // ACTION DIALOG
-    // =========================================================
+    /**
+     * Opens the action dialog associated with a scanned item.
+     *
+     * @param item scanned item
+     */
     private void openActionDialog(Item item) {
 
         Dialog<Void> dialog = createDialog("Actions", "Item : " + item.getId());
@@ -151,6 +170,11 @@ public class DashBoardController {
         dialog.show();
     }
 
+    /**
+     * Displays detailed information about an item.
+     *
+     * @param item item to display
+     */
     private void showItemInfo(Item item) {
 
         String message = "ID: " + item.getId() + "\n" + "Nom: " + item.getName() + "\n" +
@@ -158,9 +182,13 @@ public class DashBoardController {
         alert(Alert.AlertType.INFORMATION, message);
     }
 
-    // =========================================================
-    // BORROW
-    // =========================================================
+    /**
+     * Creates a new loan for the selected borrower and item.
+     *
+     * @param item borrowed item
+     * @param borrower selected borrower
+     * @param dialog dialog to close after success
+     */
     private void handleBorrow(Item item, Borrower borrower, Dialog<?> dialog) {
 
         VirtualThreadExecutor.run(() -> {
@@ -188,9 +216,12 @@ public class DashBoardController {
         });
     }
 
-    // =========================================================
-    // RETURN
-    // =========================================================
+    /**
+     * Processes the return of a borrowed item.
+     *
+     * @param item returned item
+     * @param dialog dialog to close after success
+     */
     private void handleReturn(Item item, Dialog<?> dialog) {
 
         VirtualThreadExecutor.run(() -> {
@@ -221,9 +252,11 @@ public class DashBoardController {
         });
     }
 
-    // =========================================================
-    // COMBOBOX
-    // =========================================================
+    /**
+     * Creates and configures the borrower selection combo box.
+     *
+     * @return configured borrower combo box
+     */
     private ComboBox<Borrower> createBorrowerComboBox() {
 
         ComboBox<Borrower> cb = new ComboBox<>();
@@ -249,9 +282,9 @@ public class DashBoardController {
         return cb;
     }
 
-    // =========================================================
-    // STATS
-    // =========================================================
+    /**
+     * Updates dashboard statistics asynchronously.
+     */
     private void updateStats() {
 
         VirtualThreadExecutor.run(() -> {
@@ -270,6 +303,9 @@ public class DashBoardController {
         });
     }
 
+    /**
+     * Initializes click events for statistics cards.
+     */
     private void initStatsClicks() {
 
         activeLoansBox.setOnMouseClicked(e ->
@@ -299,9 +335,12 @@ public class DashBoardController {
                 }));
     }
 
-    // =========================================================
-    // TABLE
-    // =========================================================
+    /**
+     * Displays a dialog containing a table of loans.
+     *
+     * @param title dialog title
+     * @param loans loans to display
+     */
     private void showStatDialog(String title, List<Loan> loans) {
 
         TableView<Loan> table = new TableView<>();
@@ -328,7 +367,14 @@ public class DashBoardController {
         dialog.show();
     }
 
-    // =========================================================
+    /**
+     * Creates and configures a reusable dialog window.
+     *
+     * @param title dialog title
+     * @param header dialog header text
+     * @param <T> dialog result type
+     * @return configured dialog
+     */
     private <T> Dialog<T> createDialog(String title, String header) {
 
         Dialog<T> d = new Dialog<>();
@@ -339,6 +385,9 @@ public class DashBoardController {
         return d;
     }
 
+    /**
+     * Quickly creates a new item from dashboard inputs.
+     */
     private void quickAddItem() {
 
         String name = quickItemName.getText().trim().toUpperCase();
@@ -366,6 +415,12 @@ public class DashBoardController {
         });
     }
 
+    /**
+     * Formats borrower information for display.
+     *
+     * @param b borrower to format
+     * @return formatted borrower string
+     */
     private String format(Borrower b) {
         return b.getId() + " - " + b.getFirstName() + " " + b.getLastName();
     }

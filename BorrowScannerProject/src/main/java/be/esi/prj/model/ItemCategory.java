@@ -1,13 +1,37 @@
 package be.esi.prj.model;
 
+/**
+ * Represents the different categories available for items.
+ * <p>
+ * Categories are used to classify borrowable equipment
+ * in the application.
+ */
 public enum ItemCategory {
-    RESEAU,             // équipement réseau, switch, routeur...
-    CABLAGE,            // câbles réseau, HDMI, USB…
-    STOCKAGE,           // HDD, SSD, clé USB…
-    ELECTRONIQUE,       // microcontrôleur, composant électronique…
-    PERIPHERIQUE,       // clavier, souris, écran…
-    INDUSTRIEL,         // équipement industriel, capteur
-    MESURE,             // instruments de mesure : multimètre, oscilloscope...
-    ACCESSOIRE,         // accessoire divers : multiprise, adaptateur...
-    AUTRE               // tout ce qui ne rentre pas dans les catégories ci-dessus
+
+    /** Network equipment such as switches or routers. */
+    RESEAU,
+
+    /** Network, HDMI, USB, and other cables. */
+    CABLAGE,
+
+    /** Storage devices such as HDDs, SSDs, or USB drives. */
+    STOCKAGE,
+
+    /** Electronic components and microcontrollers. */
+    ELECTRONIQUE,
+
+    /** Peripherals such as keyboards, mice, or screens. */
+    PERIPHERIQUE,
+
+    /** Industrial equipment and sensors. */
+    INDUSTRIEL,
+
+    /** Measuring instruments such as multimeters or oscilloscopes. */
+    MESURE,
+
+    /** Miscellaneous accessories such as adapters or power strips. */
+    ACCESSOIRE,
+
+    /** Items that do not fit into another category. */
+    AUTRE
 }

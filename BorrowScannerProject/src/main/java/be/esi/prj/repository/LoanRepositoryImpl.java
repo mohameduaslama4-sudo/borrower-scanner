@@ -10,6 +10,9 @@ import java.util.List;
 
 public class LoanRepositoryImpl implements LoanRepository {
 
+    // =========================
+    // MAPPING
+    // =========================
     private Loan mapResultSet(ResultSet rs) {
         try {
             int id = rs.getInt("id");
@@ -35,6 +38,9 @@ public class LoanRepositoryImpl implements LoanRepository {
         }
     }
 
+    // =========================
+    // FIND ALL
+    // =========================
     @Override
     public List<Loan> findAll() {
         List<Loan> list = new ArrayList<>();
@@ -55,102 +61,9 @@ public class LoanRepositoryImpl implements LoanRepository {
         return list;
     }
 
-    @Override
-    public Loan findById(int id) {
-        String sql = "SELECT id, item_id, borrower_id, borrowed_date, due_date, return_date FROM loans WHERE id=?";
-
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, id);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSet(rs);
-                }
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Error finding loan by id", e);
-        }
-
-        return null;
-    }
-
-    @Override
-    public List<Loan> findByBorrowerId(int borrowerId) {
-        List<Loan> list = new ArrayList<>();
-        String sql = "SELECT id, item_id, borrower_id, borrowed_date, due_date, return_date FROM loans WHERE borrower_id=?";
-
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, borrowerId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapResultSet(rs));
-                }
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Error finding loans by borrower id", e);
-        }
-
-        return list;
-    }
-
-    @Override
-    public List<Loan> findRecentLoansByBorrower(int borrowerId) {
-        List<Loan> list = new ArrayList<>();
-        String sql = """
-        SELECT id, item_id, borrower_id, borrowed_date, due_date, return_date FROM loans
-        WHERE borrower_id=?
-        ORDER BY borrowed_date DESC
-        LIMIT 5
-    """;
-
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, borrowerId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapResultSet(rs));
-                }
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Error finding recent loans", e);
-        }
-
-        return list;
-    }
-
-    @Override
-    public List<Loan> findByItemId(String itemId) {
-        List<Loan> list = new ArrayList<>();
-        String sql = "SELECT id, item_id, borrower_id, borrowed_date, due_date, return_date FROM loans WHERE item_id=?";
-
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, itemId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapResultSet(rs));
-                }
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Error finding loans by item id", e);
-        }
-
-        return list;
-    }
-
+    // =========================
+    // FIND ACTIVE LOANS
+    // =========================
     @Override
     public List<Loan> findActiveLoans() {
         List<Loan> list = new ArrayList<>();
@@ -171,29 +84,9 @@ public class LoanRepositoryImpl implements LoanRepository {
         return list;
     }
 
-    @Override
-    public List<Loan> findActiveLoansByBorrower(int borrowerId) {
-        List<Loan> list = new ArrayList<>();
-        String sql = "SELECT id, item_id, borrower_id, borrowed_date, due_date, return_date FROM loans WHERE borrower_id=? AND return_date IS NULL";
-
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, borrowerId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapResultSet(rs));
-                }
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Error finding active loans by borrower", e);
-        }
-
-        return list;
-    }
-
+    // =========================
+    // FIND OVERDUE LOANS
+    // =========================
     @Override
     public List<Loan> findOverdueLoans() {
         List<Loan> list = new ArrayList<>();
@@ -217,6 +110,10 @@ public class LoanRepositoryImpl implements LoanRepository {
         return list;
     }
 
+
+    // =========================
+    // FIND LOANS BY DATE
+    // =========================
     @Override
     public List<Loan> findLoansByDate(java.time.LocalDate start, java.time.LocalDate end) {
         List<Loan> list = new ArrayList<>();
@@ -241,6 +138,9 @@ public class LoanRepositoryImpl implements LoanRepository {
         return list;
     }
 
+    // =========================
+    // INSERT
+    // =========================
     @Override
     public void insert(Loan l) {
         String sql = "INSERT INTO loans(id, item_id, borrower_id, borrowed_date, due_date, return_date) VALUES(?,?,?,?,?,?)";
@@ -262,6 +162,9 @@ public class LoanRepositoryImpl implements LoanRepository {
         }
     }
 
+    // =========================
+    // UPDATE
+    // =========================
     @Override
     public void update(Loan l) {
         String sql = "UPDATE loans SET due_date=?, return_date=? WHERE id=?";

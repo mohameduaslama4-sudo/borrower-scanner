@@ -18,18 +18,24 @@ import javafx.stage.Stage;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
+/**
+ * Controller responsible for managing the inventory view.
+ * <p>
+ * Handles item management, filtering, editing, deletion,
+ * QR code download, and navigation between application views.
+ */
 public class InventoryController {
 
-    // ================= SERVICES
+    // SERVICES
     private final ItemService itemService = ItemService.getInstance();
     private final QRService qrService = new QRService();
 
-    // ================= NAVIGATION
+    // NAVIGATION
     @FXML private Button dashboardButton;
     @FXML private Button usersButton;
     @FXML private Button historyButton;
 
-    // ================= TABLE
+    // TABLE
     @FXML private TableView<Item> itemTable;
     @FXML private TableColumn<Item, String> colQrId;
     @FXML private TableColumn<Item, String> colName;
@@ -37,18 +43,21 @@ public class InventoryController {
     @FXML private TableColumn<Item, ItemStatus> colStatus;
     @FXML private TableColumn<Item, String> colQrPath;
 
+    // FILTERS
     private FilteredList<Item> filteredList;
 
     @FXML private TextField searchItemField;
     @FXML private ComboBox<ItemCategory> filterCategory;
     @FXML private ComboBox<ItemStatus> filterStatus;
 
-    // ================= ACTIONS
+    // ACTIONS
     @FXML private Button addButton;
     @FXML private Button editButton;
     @FXML private Button deleteButton;
 
-    // =====================================================
+    /**
+     * Initializes the inventory view and loads item data.
+     */
     @FXML
     public void initialize() {
 
@@ -70,7 +79,9 @@ public class InventoryController {
         editButton.setOnAction(e -> handleEditItem());
     }
 
-    // =====================================================
+    /**
+     * Initializes navigation button actions.
+     */
     private void initNavigation() {
 
         dashboardButton.setOnAction(e ->
@@ -83,7 +94,9 @@ public class InventoryController {
                 SceneManager.switchScene((Stage) historyButton.getScene().getWindow(), "HistoryView.fxml"));
     }
 
-    // =====================================================
+    /**
+     * Configures table columns and QR code download actions.
+     */
     private void initTable() {
 
         colQrId.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getId()));
@@ -106,7 +119,9 @@ public class InventoryController {
         });
     }
 
-    // =====================================================
+    /**
+     * Initializes search and filtering controls.
+     */
     private void initFilters() {
 
         filterCategory.setItems(FXCollections.observableArrayList(
@@ -122,7 +137,9 @@ public class InventoryController {
         searchItemField.textProperty().addListener((o, a, b) -> applyFilters());
     }
 
-    // =====================================================
+    /**
+     * Applies search and filter conditions to displayed items.
+     */
     private void applyFilters() {
 
         ItemCategory category = filterCategory.getValue();
@@ -140,9 +157,9 @@ public class InventoryController {
         });
     }
 
-    // =====================================================
-    // ADD
-    // =====================================================
+    /**
+     * Opens the item creation dialog and inserts a new item.
+     */
     private void handleInsertItem() {
 
         TextField nameField = new TextField();
@@ -188,9 +205,9 @@ public class InventoryController {
         );
     }
 
-    // =====================================================
-    // DELETE
-    // =====================================================
+    /**
+     * Deletes the currently selected item after confirmation.
+     */
     private void handleDeleteItem() {
 
         Item selected = itemTable.getSelectionModel().getSelectedItem();
@@ -206,9 +223,9 @@ public class InventoryController {
         });
     }
 
-    // =====================================================
-    // EDIT
-    // =====================================================
+    /**
+     * Opens the item edition dialog and updates the selected item.
+     */
     private void handleEditItem() {
 
         Item selected = itemTable.getSelectionModel().getSelectedItem();
@@ -241,9 +258,11 @@ public class InventoryController {
         });
     }
 
-    // =====================================================
-    // QR DOWNLOAD
-    // =====================================================
+    /**
+     * Downloads the QR code associated with an item.
+     *
+     * @param item item containing the QR code
+     */
     private void downloadQr(Item item) {
 
         if (item == null || item.getQrPath() == null) return;
@@ -266,7 +285,15 @@ public class InventoryController {
         });
     }
 
-    // =====================================================
+    /**
+     * Creates and configures a reusable dialog window.
+     *
+     * @param title dialog title
+     * @param header dialog header text
+     * @param content dialog content
+     * @param <T> dialog result type
+     * @return configured dialog
+     */
     private <T> Dialog<T> createDialog(String title, String header, javafx.scene.layout.Region content) {
 
         Dialog<T> dialog = new Dialog<>();

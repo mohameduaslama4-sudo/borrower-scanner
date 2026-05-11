@@ -8,6 +8,9 @@ import java.util.List;
 
 public class ItemRepositoryImpl implements ItemRepository {
 
+    // =========================
+    // MAPPING
+    // =========================
     private Item mapResultSet(ResultSet rs) {
         try {
             return new Item(
@@ -22,6 +25,9 @@ public class ItemRepositoryImpl implements ItemRepository {
         }
     }
 
+    // =========================
+    // FIND ALL
+    // =========================
     @Override
     public List<Item> findAll() {
         List<Item> list = new ArrayList<>();
@@ -40,90 +46,9 @@ public class ItemRepositoryImpl implements ItemRepository {
         return list;
     }
 
-    @Override
-    public Item findById(String id) {
-        String sql = "SELECT id, name, category, status, qr_path FROM items WHERE id = ?";
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, id);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSet(rs);
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error finding item by id", e);
-        }
-        return null;
-    }
-
-    @Override
-    public List<Item> searchByName(String keyword) {
-        List<Item> list = new ArrayList<>();
-        String sql = "SELECT id, name, category, status, qr_path FROM items WHERE name LIKE ?";
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, "%" + keyword + "%");
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapResultSet(rs));
-                }
-            }
-        } catch (SQLException e) { throw new RuntimeException("Error searching items by name", e); }
-        return list;
-    }
-
-    @Override
-    public List<Item> findByCategory(ItemCategory c) {
-        List<Item> list = new ArrayList<>();
-        String sql = "SELECT id, name, category, status, qr_path FROM items WHERE category = ?";
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, c.name());
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapResultSet(rs));
-                }
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Error finding items by category", e);
-        }
-        return list;
-    }
-
-    @Override
-    public List<Item> findByStatus(ItemStatus s) {
-        List<Item> list = new ArrayList<>();
-        String sql = "SELECT id, name, category, status, qr_path FROM items WHERE status = ?";
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, s.name());
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapResultSet(rs));
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error finding items by status", e);
-        }
-        return list;
-    }
-
-    @Override
-    public List<Item> findByCategoryAndStatus(ItemCategory c, ItemStatus s) {
-        List<Item> list = new ArrayList<>();
-        String sql = "SELECT id, name, category, status, qr_path FROM items WHERE category = ? AND status = ?";
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, c.name());
-            pstmt.setString(2, s.name());
-            try (ResultSet rs = pstmt.executeQuery()) { while (rs.next()) list.add(mapResultSet(rs)); }
-        } catch (SQLException e) { throw new RuntimeException("Error finding items by category and status", e); }
-        return list;
-    }
-
+    // =========================
+    // INSERT
+    // =========================
     @Override
     public void insert(Item i) {
         String sql = "INSERT INTO items(id, name, category, status, qr_path) VALUES(?,?,?,?,?)";
@@ -144,6 +69,9 @@ public class ItemRepositoryImpl implements ItemRepository {
         }
     }
 
+    // =========================
+    // UPDATE
+    // =========================
     @Override
     public void update(Item i) {
         String sql = "UPDATE items SET category=?, status=? WHERE id=?";
@@ -156,6 +84,9 @@ public class ItemRepositoryImpl implements ItemRepository {
         } catch (SQLException e) { throw new RuntimeException("Error updating item", e); }
     }
 
+    // =========================
+    // DELETE
+    // =========================
     @Override public void delete(String id) {
         String sql = "DELETE FROM items WHERE id=?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();

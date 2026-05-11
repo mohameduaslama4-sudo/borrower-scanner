@@ -17,49 +17,68 @@ import javafx.stage.Stage;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+/**
+ * Controller responsible for managing the users view.
+ * <p>
+ * Handles borrower management, user details display,
+ * loan history per user, and CRUD operations on borrowers.
+ */
 public class UsersController {
 
+    // SERVICES
     private final BorrowerService borrowerService = BorrowerService.getInstance();
     private final LoanService loanService = LoanService.getInstance();
 
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
+    // NAVIGATION
     @FXML private Button dashboardButton;
     @FXML private Button inventoryButton;
     @FXML private Button historyButton;
 
+    // TABLE
     @FXML private TableView<Borrower> userTable;
     @FXML private TableColumn<Borrower, Integer> colId;
     @FXML private TableColumn<Borrower, String> colLastName;
     @FXML private TableColumn<Borrower, String> colFirstName;
     @FXML private TableColumn<Borrower, String> colEmail;
 
+    // SEARCH
     @FXML private TextField searchUserField;
 
+    // USER DETAILS
     @FXML private VBox rightPane;
     @FXML private Label detailLastNameLabel;
     @FXML private Label detailFirstNameLabel;
     @FXML private Label detailEmailLabel;
 
+    // USER LOANS
     @FXML private Label currentLoansCountLabel;
     @FXML private ListView<String> currentLoansList;
     @FXML private ListView<String> recentHistoryList;
 
+    // ACTIONS
     @FXML private Button updateEmailButton;
     @FXML private Button deleteUserButton;
 
+    // ADD FORM
     @FXML private VBox addUserForm;
     @FXML private TextField newLastName;
     @FXML private TextField newFirstName;
     @FXML private TextField newEmail;
 
+    // ADD FORM ACTIONS
     @FXML private Button addUserButton;
     @FXML private Button cancelAddButton;
     @FXML private Button confirmAddButton;
 
+    // FILTERED DATA
     private FilteredList<Borrower> filteredBorrowers;
 
+    /**
+     * Initializes the users view and loads borrowers and loans.
+     */
     @FXML
     public void initialize() {
 
@@ -73,6 +92,9 @@ public class UsersController {
         userTable.setItems(filteredBorrowers);
     }
 
+    /**
+     * Initializes navigation buttons.
+     */
     private void initNavigation() {
 
         dashboardButton.setOnAction(e ->
@@ -85,6 +107,9 @@ public class UsersController {
                 SceneManager.switchScene((Stage) historyButton.getScene().getWindow(), "HistoryView.fxml"));
     }
 
+    /**
+     * Configures the users table and selection listener.
+     */
     private void initTable() {
 
         colId.setCellValueFactory(d -> new SimpleObjectProperty<>(d.getValue().getId()));
@@ -96,6 +121,9 @@ public class UsersController {
                 .addListener((obs, old, selected) -> showDetails(selected));
     }
 
+    /**
+     * Initializes search and action events.
+     */
     private void initActions() {
 
         searchUserField.textProperty().addListener((o, a, b) -> applyFilter(b));
@@ -108,6 +136,11 @@ public class UsersController {
         deleteUserButton.setOnAction(e -> deleteUser());
     }
 
+    /**
+     * Applies search filter to the borrower list.
+     *
+     * @param keyword search keyword
+     */
     private void applyFilter(String keyword) {
 
         if (keyword == null || keyword.isBlank()) {
@@ -120,6 +153,11 @@ public class UsersController {
                 || b.getLastName().toLowerCase().contains(lower) || b.getEmail().toLowerCase().contains(lower));
     }
 
+    /**
+     * Displays selected borrower details and loads their loans.
+     *
+     * @param b selected borrower
+     */
     private void showDetails(Borrower b) {
 
         if (b == null) {
@@ -138,6 +176,11 @@ public class UsersController {
         loadUserLoans(b);
     }
 
+    /**
+     * Loads loans associated with a borrower.
+     *
+     * @param b borrower
+     */
     private void loadUserLoans(Borrower b) {
 
         VirtualThreadExecutor.run(() -> {
@@ -156,10 +199,25 @@ public class UsersController {
         });
     }
 
+
+    /**
+     * Formats a loan currently in progress for display.
+     *
+     * @param l loan to format
+     * @return formatted current loan string
+     */
     private String formatCurrentLoan(Loan l) {
         return l.getItemId() + " | À rendre avant le " + l.getDueDate().toLocalDate().format(FORMATTER);
     }
 
+    /**
+     * Formats a loan history entry for display.
+     * <p>
+     * Includes borrowing date, item ID, and return status.
+     *
+     * @param l loan to format
+     * @return formatted history loan string
+     */
     private String formatHistoryLoan(Loan l) {
 
         String status = (l.getReturnDate() == null) ? "En cours"
@@ -168,6 +226,9 @@ public class UsersController {
         return l.getBorrowedDate().toLocalDate().format(FORMATTER) + " | " + l.getItemId() + " | " + status;
     }
 
+    /**
+     * Adds a new borrower from form input.
+     */
     private void addUser() {
 
         String last = newLastName.getText().toUpperCase();
@@ -198,6 +259,9 @@ public class UsersController {
         });
     }
 
+    /**
+     * Deletes the selected borrower.
+     */
     private void deleteUser() {
 
         Borrower selected = userTable.getSelectionModel().getSelectedItem();
@@ -220,6 +284,9 @@ public class UsersController {
         });
     }
 
+    /**
+     * Updates the email of the selected borrower.
+     */
     private void updateEmail() {
 
         Borrower selected = userTable.getSelectionModel().getSelectedItem();
@@ -227,38 +294,49 @@ public class UsersController {
 
         TextInputDialog dialog = new TextInputDialog(selected.getEmail());
         dialog.setHeaderText("Modifier email");
-        dialog.showAndWait().ifPresent(mail -> {
+        dialog.showAndWait().ifPresent(mail -> VirtualThreadExecutor.run(() -> {
+            try {
+                borrowerService.updateBorrowerEmail(selected.getId(), mail);
+                Platform.runLater(() -> {
+                    userTable.refresh();
+                    showDetails(selected);
+                });
 
-            VirtualThreadExecutor.run(() -> {
-                try {
-                    borrowerService.updateBorrowerEmail(selected.getId(), mail);
-                    Platform.runLater(() -> {
-                        userTable.refresh();
-                        showDetails(selected);
-                    });
+            } catch (IllegalArgumentException e) {
+                Platform.runLater(() -> alert(Alert.AlertType.ERROR, e.getMessage()));
 
-                } catch (IllegalArgumentException e) {
-                    Platform.runLater(() -> alert(Alert.AlertType.ERROR, e.getMessage()));
-
-                } catch (Exception e) {
-                    Platform.runLater(() -> alert(Alert.AlertType.ERROR,
-                            "Une erreur s'est produite durant la màj"));
-                }
-            });
-        });
+            } catch (Exception e) {
+                Platform.runLater(() -> alert(Alert.AlertType.ERROR,
+                        "Une erreur s'est produite durant la màj"));
+            }
+        }));
     }
 
+    /**
+     * Shows or hides the add user form.
+     *
+     * @param show true to display form, false to hide it
+     */
     private void toggleAddForm(boolean show) {
         addUserForm.setVisible(show);
         addUserForm.setManaged(show);
     }
 
+    /**
+     * Clears the add user form fields.
+     */
     private void clearForm() {
         newLastName.clear();
         newFirstName.clear();
         newEmail.clear();
     }
 
+    /**
+     * Displays an alert dialog.
+     *
+     * @param type alert type
+     * @param msg message to display
+     */
     private void alert(Alert.AlertType type, String msg) {
         new Alert(type, msg).showAndWait();
     }
