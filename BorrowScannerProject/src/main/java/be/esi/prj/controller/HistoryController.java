@@ -16,20 +16,30 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Controller responsible for managing the loan history view.
+ * <p>
+ * Handles loan display, filtering, searching, sorting,
+ * and navigation between application views.
+ */
 public class HistoryController {
 
+    // SERVICES
     private static final LoanService loanService = LoanService.getInstance();
 
+    // CONSTANTS
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("dd/MM/yyyy  |  HH:mm");
 
     private static final String STATUS_EN_COURS = "PRÊT EN COURS";
     private static final String STATUS_REMIS = "REMIS";
 
+    // NAVIGATION
     @FXML private Button dashboardButton;
     @FXML private Button inventoryButton;
     @FXML private Button usersButton;
 
+    // TABLE
     @FXML private TableView<Loan> logTable;
 
     @FXML private TableColumn<Loan, String> colLoanId;
@@ -40,14 +50,19 @@ public class HistoryController {
     @FXML private TableColumn<Loan, String> colReturnDate;
     @FXML private TableColumn<Loan, String> colStatus;
 
+    // FILTERS
     @FXML private TextField searchLogField;
     @FXML private ComboBox<String> filterAction;
     @FXML private ComboBox<String> sortDate;
     @FXML private DatePicker startDatePicker;
     @FXML private DatePicker endDatePicker;
 
+    // DATA
     private List<Loan> baseData;
 
+    /**
+     * Initializes the history view and loads loan data.
+     */
     @FXML
     public void initialize() {
         initNavigation();
@@ -56,7 +71,9 @@ public class HistoryController {
         loadData();
     }
 
-    // =====================================================
+    /**
+     * Initializes navigation button actions.
+     */
     private void initNavigation() {
 
         dashboardButton.setOnAction(e ->
@@ -72,7 +89,9 @@ public class HistoryController {
                         "UsersView.fxml"));
     }
 
-    // =====================================================
+    /**
+     * Configures table columns and displayed values.
+     */
     private void initTable() {
 
         colLoanId.setCellValueFactory(d ->
@@ -105,7 +124,9 @@ public class HistoryController {
         );
     }
 
-    // =====================================================
+    /**
+     * Initializes filtering and sorting controls.
+     */
     private void initFilters() {
 
         filterAction.setItems(FXCollections.observableArrayList(
@@ -126,7 +147,9 @@ public class HistoryController {
         endDatePicker.valueProperty().addListener((o, a, b) -> applyFilters());
     }
 
-    // =====================================================
+    /**
+     * Loads loan data asynchronously and updates the table.
+     */
     private void loadData() {
 
         VirtualThreadExecutor.run(() -> {
@@ -147,7 +170,9 @@ public class HistoryController {
         });
     }
 
-    // =====================================================
+    /**
+     * Applies search, filter, and sorting operations to the table data.
+     */
     private void applyFilters() {
 
         if (baseData == null) return;
@@ -174,6 +199,13 @@ public class HistoryController {
         logTable.setItems(FXCollections.observableArrayList(result));
     }
 
+    /**
+     * Checks whether a loan matches the selected status filter.
+     *
+     * @param l loan to check
+     * @param action selected filter
+     * @return true if the loan matches the filter
+     */
     private boolean matchAction(Loan l, String action) {
 
         if (STATUS_EN_COURS.equals(action))
@@ -185,6 +217,14 @@ public class HistoryController {
         return true;
     }
 
+    /**
+     * Checks whether a loan matches the selected date range.
+     *
+     * @param l loan to check
+     * @param start start date
+     * @param end end date
+     * @return true if the loan is within the range
+     */
     private boolean matchDate(Loan l, LocalDate start, LocalDate end) {
 
         if (start == null && end == null) return true;
@@ -195,6 +235,13 @@ public class HistoryController {
         return end == null || !d.isAfter(end);
     }
 
+    /**
+     * Checks whether a loan matches the search keyword.
+     *
+     * @param l loan to check
+     * @param keyword search keyword
+     * @return true if the loan matches the search
+     */
     private boolean matchSearch(Loan l, String keyword) {
 
         if (keyword == null || keyword.isBlank()) return true;
