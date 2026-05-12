@@ -106,15 +106,20 @@ public class InventoryController {
         colQrPath.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getQrPath()));
 
         colQrPath.setCellFactory(tc -> new TableCell<>() {
+            private final Label link = new Label("📥 Télécharger QR Code");
+            {
+                link.getStyleClass().add("qr-link");
+                link.setOnMouseClicked(e -> {
+                    Item i = getTableView().getItems().get(getIndex());
+                    downloadQr(i);
+                });
+
+            }
+
             @Override
             protected void updateItem(String path, boolean empty) {
                 super.updateItem(path, empty);
-                setText(empty ? null : "📥 Télécharger QR Code");
-                setOnMouseClicked(e -> {
-                    if (!empty) {
-                        downloadQr(getTableRow().getItem());
-                    }
-                });
+                setGraphic(empty ? null : link);
             }
         });
     }

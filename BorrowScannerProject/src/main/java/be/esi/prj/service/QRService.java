@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 /**
  * Service responsible for generating, storing, and exporting QR codes.
@@ -54,7 +55,7 @@ public class QRService {
     public void downloadQRCode(String sourcePath, Path destination) {
 
         try {
-            Files.copy(Path.of(sourcePath), destination);
+            Files.copy(Path.of(sourcePath), destination, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new IllegalStateException("Chemin vers QR code introuvable", e);
         }

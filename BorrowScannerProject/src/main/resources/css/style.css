@@ -5,7 +5,6 @@
 .root {
     -fx-font-family: "SF Pro Text", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
     -fx-background-color: linear-gradient(to bottom, #FFE89A, #FFC94D);
-    -fx-text-fill: #3A3224;
 
     /* padding global */
     -fx-padding: 20;
@@ -140,7 +139,6 @@
     -fx-border-color: #c6d8ee;
     -fx-border-radius: 14;
 
-    /* 🔥 grosse ombre dashboard */
     -fx-effect: dropshadow(gaussian, rgba(10, 30, 60, 0.20), 20, 0.25, 0, 4);
 }
 
@@ -161,12 +159,11 @@
 }
 
 .table-row-cell:hover {
-    -fx-background-color: #eaf4ff;
-    -fx-cursor: hand;
+    -fx-background-color: #FFE89A;
 }
 
 .table-row-cell:selected {
-    -fx-background-color: #d5e8ff;
+    -fx-background-color: #FFE89A;
 }
 
 /* =========================
@@ -181,6 +178,18 @@
 
 .list-cell:filled:hover {
     -fx-background-color: #edf5ff;
+}
+
+.qr-link {
+    -fx-text-fill: #1a73e8;
+    -fx-font-weight: 600;
+}
+
+.qr-link:hover {
+    -fx-text-fill: #0b57d0;
+    -fx-underline: true;
+    -fx-cursor: hand;
+
 }
 
 /* =========================
