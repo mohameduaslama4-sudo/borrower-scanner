@@ -1,13 +1,41 @@
-# macOS system files
+# OS files
 .DS_Store
 
-# Maven build output
+# Java / Maven build output
 target/
+build/
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+*.class
+
+# Maven wrapper
+!.mvn/wrapper/maven-wrapper.jar
 
 # IDE files
-.vscode/
 .idea/
+.vscode/
 *.iml
+*.iws
+*.ipr
+.classpath
+.factorypath
+.project
+.settings/
+.apt_generated/
+.springBeans
+.sts4-cache
 
-# Compiled Java files
-*.class
+# Kotlin
+.kotlin/
+
+# NetBeans
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Local application data
+external-data/
