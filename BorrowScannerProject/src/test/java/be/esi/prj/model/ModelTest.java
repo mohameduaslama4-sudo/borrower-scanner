@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -54,6 +55,17 @@ class ModelTest {
         assertEquals(ItemCategory.PERIPHERIQUE, item.getCategory());
         assertEquals(ItemStatus.UNAVAILABLE, item.getStatus());
         assertEquals("/tmp/PER-777.png", item.getQrPath());
+    }
+
+    @Test
+    void itemCounterResumesAfterPersistedIds() {
+        Item.synchronizeNextNumber(List.of(
+                new Item("CAB-003", "Cable HDMI", ItemCategory.CABLAGE,
+                        ItemStatus.AVAILABLE, "external-data/qrcodes/CAB-003.png")));
+
+        Item cable = new Item("USB", ItemCategory.CABLAGE, ItemStatus.AVAILABLE);
+
+        assertEquals("CAB-004", cable.getId());
     }
 
     @Test

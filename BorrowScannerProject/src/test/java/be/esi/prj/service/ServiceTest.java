@@ -73,24 +73,40 @@ class ServiceTest {
 
         Item added = itemService.addItem(item);
 
-        assertSame(item, added);
+        assertEquals(item.getName(), added.getName());
+        assertEquals(item.getCategory(), added.getCategory());
+        assertEquals(item.getStatus(), added.getStatus());
         assertEquals(1, itemService.getItemsObservable().size());
-        assertTrue(Files.exists(Path.of(item.getQrPath())));
-        assertEquals(item.getId(), itemService.getItemById(item.getId()).getId());
+        assertTrue(Files.exists(Path.of(added.getQrPath())));
+        assertEquals(added.getId(), itemService.getItemById(added.getId()).getId());
         assertNull(itemService.getItemById("ABSENT"));
         assertEquals(1, itemService.getAllItems().size());
 
-        item.setCategory(ItemCategory.ELECTRONIQUE);
-        item.setStatus(ItemStatus.MAINTENANCE);
-        itemService.updateItem(item);
+        added.setCategory(ItemCategory.ELECTRONIQUE);
+        added.setStatus(ItemStatus.MAINTENANCE);
+        itemService.updateItem(added);
 
-        Item persisted = new ItemRepositoryImpl().findById(item.getId());
+        Item persisted = new ItemRepositoryImpl().findAll().stream()
+                .filter(i -> i.getId().equals(added.getId()))
+                .findFirst()
+                .orElseThrow();
         assertEquals(ItemCategory.ELECTRONIQUE, persisted.getCategory());
         assertEquals(ItemStatus.MAINTENANCE, persisted.getStatus());
 
-        itemService.deleteItem(item.getId());
+        itemService.deleteItem(added.getId());
         assertTrue(itemService.getItemsObservable().isEmpty());
         assertTrue(itemService.load().isEmpty());
+    }
+
+    @Test
+    void itemServiceContinuesIdsAfterPersistedItems() {
+        new ItemRepositoryImpl().insert(new Item("CAB-003", "Cable HDMI", ItemCategory.CABLAGE,
+                ItemStatus.AVAILABLE, "external-data/qrcodes/CAB-003.png"));
+
+        Item added = itemService.addItem(new Item("USB", ItemCategory.CABLAGE, ItemStatus.AVAILABLE));
+
+        assertEquals("CAB-004", added.getId());
+        assertEquals(2, itemService.getAllItems().size());
     }
 
     @Test

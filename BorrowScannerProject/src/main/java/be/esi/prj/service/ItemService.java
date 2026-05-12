@@ -35,7 +35,9 @@ public class ItemService {
      * @return observable list of items
      */
     public ObservableList<Item> load() {
-        items.setAll(getAllItems());
+        List<Item> loadedItems = getAllItems();
+        Item.synchronizeNextNumber(loadedItems);
+        items.setAll(loadedItems);
         return items;
     }
 
@@ -81,10 +83,12 @@ public class ItemService {
      */
     public Item addItem(Item item) {
         validate(item);
-        itemRepository.insert(item);
-        items.add(item);
-        qrService.generateQRCode(item.getId());
-        return item;
+        Item.synchronizeNextNumber(itemRepository.findAll());
+        Item itemToAdd = new Item(item.getName(), item.getCategory(), item.getStatus());
+        itemRepository.insert(itemToAdd);
+        items.add(itemToAdd);
+        qrService.generateQRCode(itemToAdd.getId());
+        return itemToAdd;
     }
 
     /**

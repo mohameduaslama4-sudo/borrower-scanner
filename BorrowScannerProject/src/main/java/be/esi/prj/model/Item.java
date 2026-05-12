@@ -1,5 +1,7 @@
 package be.esi.prj.model;
 
+import java.util.Collection;
+
 /**
  * Represents an item that can be borrowed in the application.
  * <p>
@@ -48,6 +50,19 @@ public class Item {
         this.category = category;
         this.status = status;
         this.qrPath = qrPath;
+    }
+
+    /**
+     * Rebuilds the item ID counter from items already stored in the database.
+     *
+     * @param items existing items
+     */
+    public static synchronized void synchronizeNextNumber(Collection<Item> items) {
+        int maxNumber = 0;
+        for (Item item : items) {
+            maxNumber = Math.max(maxNumber, extractNumber(item.getId()));
+        }
+        nextNumber = maxNumber + 1;
     }
 
     /**
@@ -125,9 +140,26 @@ public class Item {
      * @param category the item category
      * @return the generated identifier
      */
-    private static String generateId(ItemCategory category) {
+    private static synchronized String generateId(ItemCategory category) {
         String prefix = category.name().substring(0, 3).toUpperCase();
         String number = String.format("%03d", nextNumber++);
         return prefix + "-" + number;
+    }
+
+    private static int extractNumber(String id) {
+        if (id == null) {
+            return 0;
+        }
+
+        int separatorIndex = id.lastIndexOf('-');
+        if (separatorIndex <= 0 || separatorIndex == id.length() - 1) {
+            return 0;
+        }
+
+        try {
+            return Integer.parseInt(id.substring(separatorIndex + 1));
+        } catch (NumberFormatException ignored) {
+            return 0;
+        }
     }
 }

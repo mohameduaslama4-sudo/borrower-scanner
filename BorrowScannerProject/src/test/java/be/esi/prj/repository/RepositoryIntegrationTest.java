@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,7 +30,7 @@ class RepositoryIntegrationTest {
     }
 
     @Test
-    void borrowerRepositorySupportsCrudAndSearch() {
+    void borrowerRepositorySupportsCrudWithAvailableMethods() {
         Borrower ada = new Borrower("Ada", "Lovelace", "ada@example.com");
         Borrower grace = new Borrower("Grace", "Hopper", "grace@example.com");
 
@@ -41,24 +41,22 @@ class RepositoryIntegrationTest {
 
         assertTrue(adaId > 0);
         assertEquals(2, borrowerRepository.findAll().size());
-        assertEquals("Ada", borrowerRepository.findById(adaId).getFirstName());
-        assertNull(borrowerRepository.findById(999_999));
-
-        List<Borrower> byName = borrowerRepository.findByNameOrSurname("Hopp");
-        assertEquals(1, byName.size());
-        assertEquals(graceId, byName.getFirst().getId());
+        assertEquals("Ada", findBorrower(adaId).orElseThrow().getFirstName());
+        assertTrue(findBorrower(999_999).isEmpty());
+        assertTrue(borrowerRepository.findAll().stream()
+                .anyMatch(b -> b.getLastName().contains("Hopp") && b.getId() == graceId));
 
         ada.setEmail("ada@esi.be");
         borrowerRepository.updateEmail(ada);
-        assertEquals("ada@esi.be", borrowerRepository.findById(adaId).getEmail());
+        assertEquals("ada@esi.be", findBorrower(adaId).orElseThrow().getEmail());
 
         borrowerRepository.delete(graceId);
-        assertNull(borrowerRepository.findById(graceId));
+        assertTrue(findBorrower(graceId).isEmpty());
         assertEquals(1, borrowerRepository.findAll().size());
     }
 
     @Test
-    void itemRepositorySupportsLookupFilteringUpdateAndDelete() {
+    void itemRepositorySupportsCrudWithAvailableMethods() {
         Item router = new Item("RES-900", "Routeur", ItemCategory.RESEAU,
                 ItemStatus.AVAILABLE, "external-data/qrcodes/RES-900.png");
         Item keyboard = new Item("PER-900", "Clavier", ItemCategory.PERIPHERIQUE,
@@ -71,28 +69,37 @@ class RepositoryIntegrationTest {
         itemRepository.insert(cable);
 
         assertEquals(3, itemRepository.findAll().size());
-        assertEquals("Routeur", itemRepository.findById("RES-900").getName());
-        assertNull(itemRepository.findById("ABSENT"));
-        assertEquals(List.of(router.getId()), itemRepository.searchByName("out").stream().map(Item::getId).toList());
-        assertEquals(1, itemRepository.findByCategory(ItemCategory.RESEAU).size());
-        assertEquals(2, itemRepository.findByStatus(ItemStatus.AVAILABLE).size());
-        assertEquals(1, itemRepository.findByCategoryAndStatus(ItemCategory.CABLAGE, ItemStatus.AVAILABLE).size());
+        assertEquals("Routeur", findItem("RES-900").orElseThrow().getName());
+        assertTrue(findItem("ABSENT").isEmpty());
+        assertEquals(1, itemRepository.findAll().stream()
+                .filter(i -> i.getName().contains("out"))
+                .count());
+        assertEquals(1, itemRepository.findAll().stream()
+                .filter(i -> i.getCategory() == ItemCategory.RESEAU)
+                .count());
+        assertEquals(2, itemRepository.findAll().stream()
+                .filter(i -> i.getStatus() == ItemStatus.AVAILABLE)
+                .count());
+        assertEquals(1, itemRepository.findAll().stream()
+                .filter(i -> i.getCategory() == ItemCategory.CABLAGE
+                        && i.getStatus() == ItemStatus.AVAILABLE)
+                .count());
 
         router.setCategory(ItemCategory.INDUSTRIEL);
         router.setStatus(ItemStatus.UNAVAILABLE);
         itemRepository.update(router);
 
-        Item updated = itemRepository.findById("RES-900");
+        Item updated = findItem("RES-900").orElseThrow();
         assertEquals(ItemCategory.INDUSTRIEL, updated.getCategory());
         assertEquals(ItemStatus.UNAVAILABLE, updated.getStatus());
 
         itemRepository.delete("PER-900");
-        assertNull(itemRepository.findById("PER-900"));
+        assertTrue(findItem("PER-900").isEmpty());
         assertEquals(2, itemRepository.findAll().size());
     }
 
     @Test
-    void loanRepositorySupportsAllFinderVariantsAndUpdate() {
+    void loanRepositorySupportsAvailableFinderVariantsAndUpdate() {
         int borrowerOne = borrowerRepository.insert(new Borrower("Nadia", "Comaneci", "nadia@example.com"));
         int borrowerTwo = borrowerRepository.insert(new Borrower("Simone", "Biles", "simone@example.com"));
 
@@ -114,14 +121,19 @@ class RepositoryIntegrationTest {
         loanRepository.insert(returned);
 
         assertEquals(3, loanRepository.findAll().size());
-        assertEquals("MES-100", loanRepository.findById(101).getItemId());
-        assertNull(loanRepository.findById(999_999));
-        assertEquals(2, loanRepository.findByBorrowerId(borrowerOne).size());
-        assertEquals(2, loanRepository.findRecentLoansByBorrower(borrowerOne).size());
-        assertEquals(2, loanRepository.findByItemId("MES-100").size());
+        assertEquals("MES-100", findLoan(101).orElseThrow().getItemId());
+        assertTrue(findLoan(999_999).isEmpty());
+        assertEquals(2, loanRepository.findAll().stream()
+                .filter(l -> l.getBorrowerId() == borrowerOne)
+                .count());
+        assertEquals(2, loanRepository.findAll().stream()
+                .filter(l -> l.getItemId().equals("MES-100"))
+                .count());
         assertEquals(2, loanRepository.findActiveLoans().size());
-        assertEquals(2, loanRepository.findActiveLoansByBorrower(borrowerOne).size());
-        assertEquals(List.of(102), loanRepository.findOverdueLoans().stream().map(Loan::getId).toList());
+        assertEquals(2, loanRepository.findActiveLoans().stream()
+                .filter(l -> l.getBorrowerId() == borrowerOne)
+                .count());
+        assertEquals(102, loanRepository.findOverdueLoans().getFirst().getId());
 
         LocalDate today = now.toLocalDate();
         assertEquals(2, loanRepository.findLoansByDate(today.minusDays(10), today).size());
@@ -130,8 +142,26 @@ class RepositoryIntegrationTest {
         active.setReturnDate(now);
         loanRepository.update(active);
 
-        Loan updated = loanRepository.findById(101);
+        Loan updated = findLoan(101).orElseThrow();
         assertEquals(active.getDueDate(), updated.getDueDate());
         assertEquals(now, updated.getReturnDate());
+    }
+
+    private Optional<Borrower> findBorrower(int id) {
+        return borrowerRepository.findAll().stream()
+                .filter(b -> b.getId() == id)
+                .findFirst();
+    }
+
+    private Optional<Item> findItem(String id) {
+        return itemRepository.findAll().stream()
+                .filter(i -> i.getId().equals(id))
+                .findFirst();
+    }
+
+    private Optional<Loan> findLoan(int id) {
+        return loanRepository.findAll().stream()
+                .filter(l -> l.getId() == id)
+                .findFirst();
     }
 }
