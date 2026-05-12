@@ -38,4 +38,4 @@ nbdist/
 .nb-gradle/
 
 # Local application data
-external-data/
+BorrowScannerProject/external-data/
