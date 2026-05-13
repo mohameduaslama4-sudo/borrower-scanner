@@ -1,9 +1,5 @@
 package be.esi.prj;
 
-import be.esi.prj.model.Item;
-import be.esi.prj.model.ItemCategory;
-import be.esi.prj.model.ItemStatus;
-import be.esi.prj.service.ItemService;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,9 +8,6 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 
 public class Main extends Application {
 
