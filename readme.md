@@ -1,4 +1,8 @@
 # QuickBorrow - Gestion d'Inventaire par QR Code
+## Auteurs
+
+- Houdayfa Skhairi - 62101
+- Mohamed Uaslama - 62904
 
 ## 1. Description des besoins
 
