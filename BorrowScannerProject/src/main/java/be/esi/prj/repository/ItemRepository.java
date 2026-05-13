@@ -1,8 +1,6 @@
 package be.esi.prj.repository;
 
 import be.esi.prj.model.Item;
-import be.esi.prj.model.ItemCategory;
-import be.esi.prj.model.ItemStatus;
 import java.util.List;
 
 /**
@@ -39,4 +37,16 @@ public interface ItemRepository {
      * @param id the item identifier
      */
     void delete(String id);
+
+    /**
+     * Finds the last item ID for a given category prefix.
+     * <p>
+     * The search is based on the item ID pattern (e.g., "CAB-001", "RES-002"),
+     * and returns the highest existing ID matching the specified prefix.
+     *
+     * @param prefix the category prefix (e.g., "CAB", "RES")
+     * @return the last item ID matching the prefix, or {@code null} if no item exists
+     */
+    String findLastItemIdByCategory(String prefix);
 }
+

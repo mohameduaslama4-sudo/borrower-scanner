@@ -401,7 +401,7 @@ public class DashBoardController {
         VirtualThreadExecutor.run(() -> {
 
             try {
-                itemService.addItem(new Item(name, cat, ItemStatus.AVAILABLE));
+                itemService.addItem(new Item(null, name, cat, ItemStatus.AVAILABLE, null));
                 Platform.runLater(() -> {
                     quickItemName.clear();
                     quickItemCategory.setValue(null);

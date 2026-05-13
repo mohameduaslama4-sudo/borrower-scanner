@@ -35,9 +35,7 @@ public class ItemService {
      * @return observable list of items
      */
     public ObservableList<Item> load() {
-        List<Item> loadedItems = getAllItems();
-        Item.synchronizeNextNumber(loadedItems);
-        items.setAll(loadedItems);
+        items.setAll(getAllItems());
         return items;
     }
 
@@ -75,16 +73,19 @@ public class ItemService {
     /**
      * Adds a new item to the system.
      * <p>
-     * Validates the item, persists it, updates the cache,
-     * and generates its QR code.
+     * Generates a unique ID based on category, persists the item in database,
+     * updates the in-memory list, and generates the QR code.
      *
-     * @param item the item to add
-     * @return the created item
+     * @param item the item to add (without ID)
+     * @return the created and persisted item
      */
     public Item addItem(Item item) {
         validate(item);
-        Item.synchronizeNextNumber(itemRepository.findAll());
-        Item itemToAdd = new Item(item.getName(), item.getCategory(), item.getStatus());
+        String prefix = Item.getPrefix(item.getCategory());
+        String lastId = itemRepository.findLastItemIdByCategory(prefix);
+        String newId = generateNextId(lastId, prefix);
+        String qrPath = "external-data/qrcodes/" + newId + ".png";
+        Item itemToAdd = new Item(newId, item.getName(), item.getCategory(), item.getStatus(), qrPath);
         itemRepository.insert(itemToAdd);
         items.add(itemToAdd);
         qrService.generateQRCode(itemToAdd.getId());
@@ -129,4 +130,21 @@ public class ItemService {
         if (item.getCategory() == null)
             throw new IllegalArgumentException("Category required");
     }
+
+    /**
+     * Generates the next item ID based on the last stored ID.
+     *
+     * @param lastId the last ID stored in database (or null)
+     * @param prefix the category prefix (e.g. "CAB")
+     * @return the newly generated unique ID
+     */
+    private String generateNextId(String lastId, String prefix) {
+        int next = 1;
+        if (lastId != null) {
+            String[] parts = lastId.split("-");
+            next = Integer.parseInt(parts[1]) + 1;
+        }
+        return prefix + "-" + String.format("%03d", next);
+    }
 }
+

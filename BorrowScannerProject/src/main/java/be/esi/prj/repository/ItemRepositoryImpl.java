@@ -87,7 +87,8 @@ public class ItemRepositoryImpl implements ItemRepository {
     // =========================
     // DELETE
     // =========================
-    @Override public void delete(String id) {
+    @Override
+    public void delete(String id) {
         String sql = "DELETE FROM items WHERE id=?";
         try (Connection conn = ConnectionManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -96,6 +97,27 @@ public class ItemRepositoryImpl implements ItemRepository {
 
         } catch (SQLException e) {
             throw new RuntimeException("Error deleting item", e);
+        }
+    }
+
+    // =========================
+    // FIND LAST ITEM ID BY CATEGORY
+    // =========================
+    @Override
+    public String findLastItemIdByCategory(String prefix) {
+        String sql = "SELECT id FROM items WHERE id LIKE ? ORDER BY id DESC LIMIT 1";
+        try (Connection conn = ConnectionManager.getInstance().getConnection();
+        PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1,prefix + "-%");
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("id");
+            }
+            return  null;
+
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error fetching last Item ID", e);
         }
     }
 }

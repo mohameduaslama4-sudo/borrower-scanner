@@ -1,7 +1,5 @@
 package be.esi.prj.model;
 
-import java.util.Collection;
-
 /**
  * Represents an item that can be borrowed in the application.
  * <p>
@@ -10,30 +8,11 @@ import java.util.Collection;
  */
 public class Item {
 
-    private static int nextNumber = 1;
     private final String id;
     private final String name;
     private ItemCategory category;
     private ItemStatus status;
     private final String qrPath;
-
-    /**
-     * Creates a new item before database insertion.
-     * <p>
-     * The item identifier is generated automatically
-     * according to its category.
-     *
-     * @param name the item name
-     * @param category the item category
-     * @param status the item status
-     */
-    public Item(String name, ItemCategory category, ItemStatus status) {
-        this.id = generateId(category);
-        this.name = name;
-        this.category = category;
-        this.status = status;
-        this.qrPath = "external-data/qrcodes/" + id + ".png";
-    }
 
     /**
      * Creates an item loaded from the database.
@@ -50,19 +29,6 @@ public class Item {
         this.category = category;
         this.status = status;
         this.qrPath = qrPath;
-    }
-
-    /**
-     * Rebuilds the item ID counter from items already stored in the database.
-     *
-     * @param items existing items
-     */
-    public static synchronized void synchronizeNextNumber(Collection<Item> items) {
-        int maxNumber = 0;
-        for (Item item : items) {
-            maxNumber = Math.max(maxNumber, extractNumber(item.getId()));
-        }
-        nextNumber = maxNumber + 1;
     }
 
     /**
@@ -129,37 +95,15 @@ public class Item {
     }
 
     /**
-     * Generates a unique identifier for an item.
+     * Returns the 3-letter prefix of the item category.
      * <p>
-     * The identifier is composed of:
-     * <ul>
-     *     <li>the first three letters of the category</li>
-     *     <li>an incremented numeric value</li>
-     * </ul>
+     * The prefix is derived from the first three characters of the category name in uppercase.
      *
      * @param category the item category
-     * @return the generated identifier
+     * @return the category prefix (e.g., "CAB", "RES")
      */
-    private static synchronized String generateId(ItemCategory category) {
-        String prefix = category.name().substring(0, 3).toUpperCase();
-        String number = String.format("%03d", nextNumber++);
-        return prefix + "-" + number;
-    }
+    public static String getPrefix(ItemCategory category) {
+        return category.name().substring(0, 3).toUpperCase();
 
-    private static int extractNumber(String id) {
-        if (id == null) {
-            return 0;
-        }
-
-        int separatorIndex = id.lastIndexOf('-');
-        if (separatorIndex <= 0 || separatorIndex == id.length() - 1) {
-            return 0;
-        }
-
-        try {
-            return Integer.parseInt(id.substring(separatorIndex + 1));
-        } catch (NumberFormatException ignored) {
-            return 0;
-        }
     }
 }
