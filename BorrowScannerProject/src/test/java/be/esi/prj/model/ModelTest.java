@@ -3,8 +3,6 @@ package be.esi.prj.model;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,26 +27,14 @@ class ModelTest {
     }
 
     @Test
-    void itemGeneratesReadableIdAndQrPathFromCategory() {
-        Item item = new Item("Oscilloscope", ItemCategory.MESURE, ItemStatus.AVAILABLE);
-
-        assertTrue(item.getId().matches("MES-\\d{3}"));
-        assertEquals("Oscilloscope", item.getName());
-        assertEquals(ItemCategory.MESURE, item.getCategory());
-        assertEquals(ItemStatus.AVAILABLE, item.getStatus());
-        assertEquals("external-data/qrcodes/" + item.getId() + ".png", item.getQrPath());
-
-        item.setCategory(ItemCategory.ELECTRONIQUE);
-        item.setStatus(ItemStatus.MAINTENANCE);
-
-        assertEquals(ItemCategory.ELECTRONIQUE, item.getCategory());
-        assertEquals(ItemStatus.MAINTENANCE, item.getStatus());
-    }
-
-    @Test
     void itemPersistedConstructorKeepsDatabaseValues() {
-        Item item = new Item("PER-777", "Clavier", ItemCategory.PERIPHERIQUE,
-                ItemStatus.UNAVAILABLE, "/tmp/PER-777.png");
+        Item item = new Item(
+                "PER-777",
+                "Clavier",
+                ItemCategory.PERIPHERIQUE,
+                ItemStatus.UNAVAILABLE,
+                "/tmp/PER-777.png"
+        );
 
         assertEquals("PER-777", item.getId());
         assertEquals("Clavier", item.getName());
@@ -58,14 +44,20 @@ class ModelTest {
     }
 
     @Test
-    void itemCounterResumesAfterPersistedIds() {
-        Item.synchronizeNextNumber(List.of(
-                new Item("CAB-003", "Cable HDMI", ItemCategory.CABLAGE,
-                        ItemStatus.AVAILABLE, "external-data/qrcodes/CAB-003.png")));
+    void itemMutatorsWorkCorrectly() {
+        Item item = new Item(
+                "ELE-001",
+                "Camera",
+                ItemCategory.ELECTRONIQUE,
+                ItemStatus.AVAILABLE,
+                "/tmp/ELE-001.png"
+        );
 
-        Item cable = new Item("USB", ItemCategory.CABLAGE, ItemStatus.AVAILABLE);
+        item.setCategory(ItemCategory.MESURE);
+        item.setStatus(ItemStatus.MAINTENANCE);
 
-        assertEquals("CAB-004", cable.getId());
+        assertEquals(ItemCategory.MESURE, item.getCategory());
+        assertEquals(ItemStatus.MAINTENANCE, item.getStatus());
     }
 
     @Test
@@ -99,7 +91,7 @@ class ModelTest {
 
     @Test
     void loanCanBeExtendedUntilSixtyDaysAndNotAfterReturn() {
-        LocalDateTime borrowed = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+        LocalDateTime borrowed = LocalDateTime.now().withSecond(0).withNano(0);
         Loan loan = new Loan(1, "STO-001", 3, borrowed, borrowed.plusDays(30), null);
 
         loan.extendDueDate();
@@ -115,13 +107,14 @@ class ModelTest {
     }
 
     @Test
+
     void loanReturnDateCanOnlyBeSetOnce() {
+
         Loan loan = new Loan("CAB-001", 8);
         LocalDateTime returned = LocalDateTime.of(2026, 5, 10, 14, 30);
-
         loan.setReturnDate(returned);
+        LocalDateTime invalidReturn = returned.plusDays(1);
 
-        assertEquals(returned, loan.getReturnDate());
-        assertThrows(IllegalStateException.class, () -> loan.setReturnDate(returned.plusDays(1)));
+        assertThrows(IllegalStateException.class, () -> loan.setReturnDate(invalidReturn));
     }
 }

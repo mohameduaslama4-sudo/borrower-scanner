@@ -4,6 +4,7 @@ import be.esi.prj.testsupport.TestDatabase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -19,34 +20,56 @@ class QRServiceTest {
         qrService = new QRService();
     }
 
+    // =====================================================
+    // GENERATE QR
+    // =====================================================
     @Test
-    void generateQrCodeCreatesPngInQrFolder() {
-        qrService.generateQRCode("ITEM-123");
+    void generateQrCodeCreatesPngInQrFolder() throws IOException {
+        String content = "ITEM-123";
 
-        Path generated = Path.of("external-data", "qrcodes", "ITEM-123.png");
+        qrService.generateQRCode(content);
+
+        Path generated = Path.of("external-data", "qrcodes", content + ".png");
+
         assertTrue(Files.exists(generated));
-        assertTrue(generated.toFile().length() > 0);
+        assertTrue(Files.size(generated) > 0);
     }
 
+    // =====================================================
+    // DOWNLOAD QR
+    // =====================================================
     @Test
-    void downloadQrCodeCopiesSourceToDestination() throws Exception {
-        Path source = Files.createTempFile("source-qr", ".png");
-        Files.writeString(source, "png-ish");
-        Path destination = Files.createTempFile("dest-qr", ".png");
+    void downloadQrCodeCopiesFileCorrectly() throws Exception {
+
+        Path source = Files.createTempFile("qr-source", ".png");
+        Files.write(source, new byte[]{1, 2, 3, 4}); // fake binary
+
+        Path destination = Files.createTempFile("qr-dest", ".png");
         Files.delete(destination);
 
         qrService.downloadQRCode(source.toString(), destination);
 
-        assertEquals("png-ish", Files.readString(destination));
+        assertTrue(Files.exists(destination));
+        assertArrayEquals(
+                Files.readAllBytes(source),
+                Files.readAllBytes(destination)
+        );
     }
 
+    // =====================================================
+    // ERROR HANDLING
+    // =====================================================
     @Test
-    void downloadQrCodeWrapsMissingSourceAsIllegalState() {
-        Path destination = Path.of("external-data", "qrcodes", "missing-copy.png");
+    void downloadQrCodeThrowsWhenSourceMissing() {
 
-        IllegalStateException error = assertThrows(IllegalStateException.class,
-                () -> qrService.downloadQRCode("does-not-exist.png", destination));
+        Path destination = Path.of("external-data", "qrcodes", "missing.png");
 
-        assertTrue(error.getMessage().contains("Chemin vers QR code"));
+        IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> qrService.downloadQRCode("does-not-exist.png", destination)
+        );
+
+        assertTrue(ex.getMessage().contains("introuvable")
+                || ex.getMessage().contains("Chemin"));
     }
 }

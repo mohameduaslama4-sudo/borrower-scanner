@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 /**
@@ -21,7 +22,23 @@ import java.nio.file.StandardCopyOption;
  */
 public class QRService {
 
-    private static final String FOLDER = "external-data/qrcodes";
+    private static final String FOLDER = "external-data/qrcodes/";
+
+    /**
+     * Creates a new QRService instance.
+     * <p>
+     * Ensures that the QR code storage directory exists by creating it
+     * if it does not already exist.
+     *
+     * @throws RuntimeException if the directory cannot be created
+     */
+    public QRService() {
+        try {
+            Files.createDirectories(Paths.get(FOLDER));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * Generates a QR code image from the given content and stores it locally.
@@ -32,9 +49,8 @@ public class QRService {
     public void generateQRCode(String content) {
 
         try {
-            String filePath = FOLDER + File.separator + content + ".png";
-            Path qrPath = new File(filePath).toPath();
-            Files.createDirectories(qrPath.getParent());
+            String filePath = FOLDER + content + ".png";
+            Path qrPath = Paths.get(filePath);
 
             QRCodeWriter writer = new QRCodeWriter();
             BitMatrix matrix = writer.encode(content, BarcodeFormat.QR_CODE, 300, 300);

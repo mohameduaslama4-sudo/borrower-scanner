@@ -14,25 +14,36 @@ import java.sql.Statement;
 
 public final class TestDatabase {
 
+    private static final Path QR_FOLDER = Path.of("external-data", "qrcodes");
+
     private TestDatabase() {
     }
 
     public static void reset() {
         try {
-            Files.createDirectories(Path.of("external-data", "qrcodes"));
+            // ensure QR folder exists
+            Files.createDirectories(QR_FOLDER);
+
+            // init DB
             ConnectionManager.getInstance();
 
+            // clean database
             try (Connection connection = ConnectionManager.getInstance().getConnection();
                  Statement statement = connection.createStatement()) {
+
                 statement.execute("DELETE FROM loans");
                 statement.execute("DELETE FROM items");
                 statement.execute("DELETE FROM borrowers");
-                statement.execute("DELETE FROM sqlite_sequence WHERE name IN ('borrowers', 'loans')");
+                statement.execute(
+                        "DELETE FROM sqlite_sequence WHERE name IN ('borrowers', 'loans')"
+                );
             }
 
+            // clear service caches
             BorrowerService.getInstance().getBorrowersObservable().clear();
             ItemService.getInstance().getItemsObservable().clear();
             LoanService.getInstance().getLoansObservable().clear();
+
         } catch (SQLException | IOException e) {
             throw new RuntimeException("Cannot reset test database", e);
         }

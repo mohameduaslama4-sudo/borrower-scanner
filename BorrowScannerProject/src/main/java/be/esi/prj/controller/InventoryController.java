@@ -187,7 +187,7 @@ public class InventoryController {
                     !nameField.getText().isBlank() &&
                     categoryBox.getValue() != null) {
 
-                return new Item(nameField.getText().toUpperCase(), categoryBox.getValue(), ItemStatus.AVAILABLE);
+                return new Item(null, nameField.getText().toUpperCase(), categoryBox.getValue(), ItemStatus.AVAILABLE, null);
             }
             return null;
         });
