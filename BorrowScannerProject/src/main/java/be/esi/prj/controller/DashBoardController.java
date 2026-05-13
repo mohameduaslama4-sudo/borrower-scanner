@@ -118,7 +118,7 @@ public class DashBoardController {
         Platform.runLater(field::requestFocus);
 
         field.setOnAction(e -> {
-            String value = field.getText();
+            String value = field.getText().replace("§", "-");
             if (value == null || value.isBlank()) return;
 
             VirtualThreadExecutor.run(() -> {
